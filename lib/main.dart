@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:tapatupa/user/loading_screen.dart';
 import 'package:tapatupa/user/login.dart';
 import 'package:tapatupa/user/RetributionListPage.dart';
+import 'package:tapatupa/user/onboarding_screen.dart'; // TAMBAHAN
 import 'package:shared_preferences/shared_preferences.dart';
 import 'user/home.dart';
 
 void main() async {
-  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-  // Clear any existing login data on app start
+
   final prefs = await SharedPreferences.getInstance();
-  await prefs.clear(); // This ensures fresh login is required
+  await prefs.clear(); // reset login tiap run
+
   runApp(MyApp());
 }
 
@@ -19,24 +20,27 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+
       routes: {
         '/loading': (context) => LoadingScreen(),
+        '/onboarding': (context) => OnboardingScreen(), // TAMBAHAN
         '/login': (context) => login(),
         '/home': (context) => home(),
         '/retribution': (context) => RetributionListPage(),
       },
-      home: FutureBuilder(
+
+      home: FutureBuilder<SharedPreferences>(
         future: Future.delayed(
-          Duration(seconds: 2), // Show loading screen for 2 seconds
+          const Duration(seconds: 3),
           () => SharedPreferences.getInstance(),
         ),
         builder: (context, snapshot) {
-          // Always show LoadingScreen first
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData) {
             return LoadingScreen();
           }
 
-          return login();
+         
+          return OnboardingScreen();
         },
       ),
     );
