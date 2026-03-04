@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tapatupa/user/loading_screen.dart';
-import 'package:tapatupa/user/login.dart';
+import 'package:tapatupa/screens/loading_screen.dart';
+import 'package:tapatupa/screens/login.dart';
+import 'package:tapatupa/screens/registrasi.dart'; 
 import 'package:tapatupa/user/RetributionListPage.dart';
-import 'package:tapatupa/user/onboarding_screen.dart'; // TAMBAHAN
+import 'package:tapatupa/screens/onboarding_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'user/home.dart';
 
@@ -22,10 +23,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       routes: {
-        '/loading': (context) => LoadingScreen(),
-        '/onboarding': (context) => OnboardingScreen(), // TAMBAHAN
-        '/login': (context) => login(),
-        '/home': (context) => home(),
+        '/loading':     (context) => LoadingScreen(),
+        '/onboarding':  (context) => OnboardingScreen(),
+        '/login':       (context) => login(),
+        '/register':    (context) => Register(), 
+        '/home':        (context) => home(),
         '/retribution': (context) => RetributionListPage(),
       },
 
@@ -38,8 +40,6 @@ class MyApp extends StatelessWidget {
           if (!snapshot.hasData) {
             return LoadingScreen();
           }
-
-         
           return OnboardingScreen();
         },
       ),

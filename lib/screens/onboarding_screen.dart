@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:tapatupa/styles/app_styles.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -13,36 +14,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentIndex = 0;
   Timer? _timer;
 
-  // ── Warna utama ──────────────────────────────────────────
-  static const Color kRed = Color(0xFFEC4336);
-  static const Color kRedLight = Color(0xFFFFF0EF);
-  static const Color kGray = Color(0xFF8A8A9A);
-  static const Color kDark = Color(0xFF1A1A2E);
-
   // ── Data slide ───────────────────────────────────────────
-final List<Map<String, String>> slides = const [
+  final List<Map<String, String>> slides = const [
     {
       "img": "assets/aib1.jpeg",
-      "step": "LANGKAH 01",
-      "title": "Kelola Aset Daerah Tanpa Batas",
+      "title": "Selamat Datang di TAPATUPA",
       "desc":
-          "Urus sewa lahan dan bangunan milik Pemkab Tapanuli Utara kapan saja, tanpa perlu hadir langsung ke kantor BKAD.",
+          "Solusi digital terpadu untuk pengelolaan dan penyewaan aset daerah di Kabupaten Tapanuli Utara secara transparan dan akuntabel.",
     },
     {
       "img": "assets/aib2.jpeg",
-      "step": "LANGKAH 02",
-      "title": "Data Aman, Transparan & Akuntabel",
+      "title": "Katalog Aset yang Lengkap",
       "desc":
-          "Dokumen kontrak tersimpan digital dan terenkripsi. Pantau status permohonan serta tarif resmi secara real-time.",
+          "Telusuri berbagai pilihan lahan dan bangunan milik daerah dengan informasi lokasi serta status ketersediaan yang diperbarui secara real-time.",
     },
     {
       "img": "assets/aib3.jpeg",
-      "step": "LANGKAH 03",
-      "title": "Optimalkan Pendapatan Asli Daerah",
+      "title": "Pengajuan Sewa Jadi Praktis",
       "desc":
-          "Sistem validasi aset digital mencegah kebocoran PAD dan memastikan pemanfaatan aset sesuai perjanjian resmi.",
+          "Urus permohonan sewa aset tanpa perlu ke kantor. Cukup unggah dokumen persyaratan dan pantau proses verifikasi langsung dari genggaman Anda.",
+    },
+    {
+      "img": "assets/aib4.jpeg",
+      "title": "Transparansi Pembayaran",
+      "desc":
+          "Lakukan pembayaran retribusi dengan aman dan dapatkan konfirmasi instan. Semua riwayat transaksi tercatat rapi dalam sistem yang terintegrasi.",
     },
   ];
+
   @override
   void initState() {
     super.initState();
@@ -80,23 +79,20 @@ final List<Map<String, String>> slides = const [
     }
   }
 
-  String get _buttonLabel {
-    if (_currentIndex == 0) return 'Mulai Sekarang';
-    if (_currentIndex == slides.length - 1) return 'Masuk Sekarang';
-    return 'Lanjutkan';
-  }
+  String get _buttonLabel =>
+      _currentIndex == slides.length - 1 ? 'Mulai' : 'Selanjutnya';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // Progress bar tipis di atas
+            // Progress bar
             _ProgressBar(current: _currentIndex, total: slides.length),
 
-            // Area PageView
+            // PageView
             Expanded(
               child: PageView.builder(
                 controller: _controller,
@@ -120,18 +116,14 @@ final List<Map<String, String>> slides = const [
               ),
             ),
 
-            // Skip
+            // Tombol lewati
             if (_currentIndex < slides.length - 1)
               TextButton(
                 onPressed: () =>
                     Navigator.pushReplacementNamed(context, '/login'),
                 child: const Text(
                   'Lewati',
-                  style: TextStyle(
-                    color: kGray,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: OnboardingStyles.skipText,
                 ),
               )
             else
@@ -158,14 +150,14 @@ class _ProgressBar extends StatelessWidget {
     return LayoutBuilder(builder: (ctx, constraints) {
       return Stack(
         children: [
-          Container(height: 3, color: const Color(0xFFEEEEEE)),
+          Container(height: 3, color: AppColors.divider),
           AnimatedContainer(
             duration: const Duration(milliseconds: 450),
             curve: Curves.easeInOut,
             height: 3,
             width: constraints.maxWidth * ((current + 1) / total),
             decoration: BoxDecoration(
-              color: _OnboardingScreenState.kRed,
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -189,21 +181,11 @@ class _SlideItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Ilustrasi dengan card bulat + shadow merah lembut
+          // Card ilustrasi
           Container(
             width: 240,
             height: 240,
-            decoration: BoxDecoration(
-              color: _OnboardingScreenState.kRedLight,
-              borderRadius: BorderRadius.circular(40),
-              boxShadow: [
-                BoxShadow(
-                  color: _OnboardingScreenState.kRed.withOpacity(0.12),
-                  blurRadius: 32,
-                  offset: const Offset(0, 16),
-                ),
-              ],
-            ),
+            decoration: OnboardingStyles.illustrationCard,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(40),
               child: Padding(
@@ -211,6 +193,11 @@ class _SlideItem extends StatelessWidget {
                 child: Image.asset(
                   slide['img']!,
                   fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.image_not_supported_outlined,
+                    size: 80,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             ),
@@ -218,42 +205,18 @@ class _SlideItem extends StatelessWidget {
 
           const SizedBox(height: 40),
 
-          // Label langkah
-          Text(
-            slide['step']!,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2.5,
-              color: _OnboardingScreenState.kRed,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Judul
           Text(
             slide['title']!,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: _OnboardingScreenState.kDark,
-              height: 1.3,
-            ),
+            style: OnboardingStyles.slideTitle,
           ),
 
           const SizedBox(height: 14),
 
-          // Deskripsi
           Text(
             slide['desc']!,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 14,
-              color: _OnboardingScreenState.kGray,
-              height: 1.7,
-            ),
+            style: OnboardingStyles.slideDesc,
           ),
         ],
       ),
@@ -282,9 +245,7 @@ class _DotIndicator extends StatelessWidget {
           height: 7,
           width: isActive ? 24 : 7,
           decoration: BoxDecoration(
-            color: isActive
-                ? _OnboardingScreenState.kRed
-                : const Color(0xFFE0E0E8),
+            color: isActive ? AppColors.primary : AppColors.dotInactive,
             borderRadius: BorderRadius.circular(10),
           ),
         );
@@ -308,25 +269,13 @@ class _PrimaryButton extends StatelessWidget {
       height: 54,
       child: ElevatedButton(
         onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _OnboardingScreenState.kRed,
-          foregroundColor: Colors.white,
-          elevation: 8,
-          shadowColor: _OnboardingScreenState.kRed.withOpacity(0.4),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
+        style: OnboardingStyles.primaryButton,
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
           child: Text(
             label,
             key: ValueKey(label),
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
+            style: OnboardingStyles.buttonLabel,
           ),
         ),
       ),

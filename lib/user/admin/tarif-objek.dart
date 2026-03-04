@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tapatupa/user/detail-tarif.dart';
-import 'package:tapatupa/user/login.dart';
+import 'package:tapatupa/screens/login.dart';
 import 'package:tapatupa/user/service/api_service.dart';
 
 class TarifObjekListPage extends StatefulWidget {
