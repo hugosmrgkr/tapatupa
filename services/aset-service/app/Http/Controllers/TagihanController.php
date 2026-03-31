@@ -52,8 +52,7 @@ class TagihanController extends Controller
     public function activePayment(Request $request)
     {
         try {
-            $tagihan = Tagihan::where('status', 'UNPAID')
-                ->orWhere('status', 'PENDING')
+            $tagihan = Tagihan::whereIn('status', ['UNPAID', 'PENDING'])
                 ->orderBy('tanggal_jatuh_tempo', 'asc')
                 ->first();
 

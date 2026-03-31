@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('email')->nullable()->unique();
             $table->string('nama_lengkap');
-            $table->string('nomor_hp', 20)->nullable();
+            $table->string('nomor_hp', 25)->nullable();
             $table->text('alamat')->nullable();
             $table->string('foto')->nullable();
             $table->integer('role_id')->default(2);

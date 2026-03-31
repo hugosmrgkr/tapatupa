@@ -51,7 +51,7 @@ class PerjanjianTagihanSeeder extends Seeder
         ];
 
         foreach ($bulanData as $data) {
-            $jatuhTempo = Carbon::create(2024, $data['bulan'], 28);
+            $jatuhTempo = Carbon::create(2024, $data['bulan'], 1)->endOfMonth();
             DB::table('tagihan')->insert([
                 'nomor_tagihan' => 'TGH-2024-' . str_pad($perjanjian1Id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($data['bulan'], 2, '0', STR_PAD_LEFT),
                 'id_perjanjian' => $perjanjian1Id,
@@ -76,7 +76,7 @@ class PerjanjianTagihanSeeder extends Seeder
         ];
 
         foreach ($bulanData2 as $data) {
-            $jatuhTempo = Carbon::create(2024, $data['bulan'], 28);
+            $jatuhTempo = Carbon::create(2024, $data['bulan'], 1)->endOfMonth();
             DB::table('tagihan')->insert([
                 'nomor_tagihan' => 'TGH-2024-' . str_pad($perjanjian2Id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($data['bulan'], 2, '0', STR_PAD_LEFT),
                 'id_perjanjian' => $perjanjian2Id,
