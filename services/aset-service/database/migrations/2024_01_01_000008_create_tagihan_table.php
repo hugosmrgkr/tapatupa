@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('nomor_tagihan')->unique();
             $table->foreignId('id_perjanjian')->constrained('perjanjian_sewa');
-            $table->string('id_personal');
+            $table->bigInteger('id_personal');
             $table->integer('periode_bulan');
             $table->integer('periode_tahun');
             $table->decimal('nilai_tagihan', 15, 2);

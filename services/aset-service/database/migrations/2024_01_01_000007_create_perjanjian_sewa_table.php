@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('nomor_perjanjian')->unique();
             $table->foreignId('id_permohonan')->nullable()->constrained('permohonan');
-            $table->string('id_personal');
+            $table->bigInteger('id_personal');
             $table->foreignId('id_aset')->constrained('aset');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');

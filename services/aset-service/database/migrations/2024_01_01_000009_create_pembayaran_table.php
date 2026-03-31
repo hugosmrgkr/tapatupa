@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('nomor_tagihan');
             $table->foreignId('id_tagihan')->constrained('tagihan');
-            $table->string('id_personal');
+            $table->bigInteger('id_personal');
             $table->decimal('nilai_bayar', 15, 2);
             $table->string('metode_bayar', 50)->default('TRANSFER');
             $table->string('bukti_bayar')->nullable();

@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('permohonan', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_permohonan')->unique();
-            $table->string('id_personal');
+            $table->bigInteger('id_personal');
             $table->foreignId('id_aset')->constrained('aset');
             $table->foreignId('id_jenis_permohonan')->constrained('jenis_permohonan');
             $table->foreignId('id_perioditas')->constrained('perioditas');
