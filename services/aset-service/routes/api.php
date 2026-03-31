@@ -32,6 +32,7 @@ Route::middleware('vendor.id')->group(function () {
 
         // Permohonan (Application)
         Route::prefix('permohonan-mobile')->group(function () {
+            Route::get('/detail-by-kode/{kode}', [PermohonanController::class, 'detailByKode']);
             Route::get('/detail/{id}', [PermohonanController::class, 'detail']);
             Route::post('/simpan', [PermohonanController::class, 'simpan']);
             Route::get('/{idPersonal}', [PermohonanController::class, 'index']);

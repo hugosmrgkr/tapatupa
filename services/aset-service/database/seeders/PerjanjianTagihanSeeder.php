@@ -16,7 +16,7 @@ class PerjanjianTagihanSeeder extends Seeder
         $perjanjian1Id = DB::table('perjanjian_sewa')->insertGetId([
             'nomor_perjanjian' => 'PRJ-2024-0001',
             'id_permohonan' => null,
-            'id_personal' => 'PRS-0001',
+            'id_personal' => 1001,
             'id_aset' => $aset1->id,
             'tanggal_mulai' => '2024-01-01',
             'tanggal_selesai' => '2024-12-31',
@@ -30,7 +30,7 @@ class PerjanjianTagihanSeeder extends Seeder
         $perjanjian2Id = DB::table('perjanjian_sewa')->insertGetId([
             'nomor_perjanjian' => 'PRJ-2024-0002',
             'id_permohonan' => null,
-            'id_personal' => 'PRS-0002',
+            'id_personal' => 1002,
             'id_aset' => $aset2->id,
             'tanggal_mulai' => '2024-03-01',
             'tanggal_selesai' => '2025-02-28',
@@ -55,7 +55,7 @@ class PerjanjianTagihanSeeder extends Seeder
             DB::table('tagihan')->insert([
                 'nomor_tagihan' => 'TGH-2024-' . str_pad($perjanjian1Id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($data['bulan'], 2, '0', STR_PAD_LEFT),
                 'id_perjanjian' => $perjanjian1Id,
-                'id_personal' => 'PRS-0001',
+                'id_personal' => 1001,
                 'periode_bulan' => $data['bulan'],
                 'periode_tahun' => 2024,
                 'nilai_tagihan' => 600000,
@@ -80,7 +80,7 @@ class PerjanjianTagihanSeeder extends Seeder
             DB::table('tagihan')->insert([
                 'nomor_tagihan' => 'TGH-2024-' . str_pad($perjanjian2Id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($data['bulan'], 2, '0', STR_PAD_LEFT),
                 'id_perjanjian' => $perjanjian2Id,
-                'id_personal' => 'PRS-0002',
+                'id_personal' => 1002,
                 'periode_bulan' => $data['bulan'],
                 'periode_tahun' => 2024,
                 'nilai_tagihan' => 15000000,

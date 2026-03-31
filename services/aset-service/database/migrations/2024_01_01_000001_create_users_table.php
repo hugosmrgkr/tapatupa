@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('alamat')->nullable();
             $table->string('foto')->nullable();
             $table->integer('role_id')->default(2);
-            $table->string('id_personal')->unique();
+            $table->bigInteger('id_personal')->unique();
             $table->rememberToken();
             $table->timestamps();
         });

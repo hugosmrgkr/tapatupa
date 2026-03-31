@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
             'nomor_hp' => '081234567890',
             'alamat' => 'Jl. Pemerintah No. 1',
             'role_id' => 1,
-            'id_personal' => 'PRS-ADMIN-001',
+            'id_personal' => 1000,
         ]);
 
         User::create([
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
             'nomor_hp' => '081234567891',
             'alamat' => 'Jl. Mawar No. 5, RT 01/RW 02',
             'role_id' => 2,
-            'id_personal' => 'PRS-0001',
+            'id_personal' => 1001,
         ]);
 
         User::create([
@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
             'nomor_hp' => '081234567892',
             'alamat' => 'Jl. Melati No. 10, RT 03/RW 01',
             'role_id' => 2,
-            'id_personal' => 'PRS-0002',
+            'id_personal' => 1002,
         ]);
 
         User::create([
@@ -51,7 +51,7 @@ class UserSeeder extends Seeder
             'nomor_hp' => '081234567893',
             'alamat' => 'Jl. Anggrek No. 15, RT 02/RW 03',
             'role_id' => 2,
-            'id_personal' => 'PRS-0003',
+            'id_personal' => 1003,
         ]);
     }
 }
