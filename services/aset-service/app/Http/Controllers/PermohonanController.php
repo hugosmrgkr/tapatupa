@@ -88,18 +88,18 @@ class PermohonanController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'detailDermohonan' => $detail,
+                'detailPermohonan' => $detail,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 404,
-                'detailDermohonan' => null,
+                'detailPermohonan' => null,
                 'responseMessage' => 'Permohonan tidak ditemukan',
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'detailDermohonan' => null,
+                'detailPermohonan' => null,
                 'responseMessage' => $e->getMessage(),
             ], 500);
         }
