@@ -25,18 +25,12 @@ flowchart LR
 	UC02(["UC-02 Onboarding"])
 	UC03(["UC-03 Registrasi Akun"])
 	UC04(["UC-04 Login Pengguna"])
-	UC05(["UC-05 Dashboard & Navigasi"])
 	UC06(["UC-06 Daftar Objek Retribusi"])
-	UC07(["UC-07 Detail Objek Retribusi"])
 	UC08(["UC-08 Daftar Tarif Objek"])
-	UC09(["UC-09 Detail Tarif & Dokumen"])
 	UC10(["UC-10 Buat Permohonan Sewa"])
 	UC11(["UC-11 Riwayat Permohonan"])
-	UC12(["UC-12 Detail Permohonan"])
 	UC13(["UC-13 Lihat Perjanjian Sewa"])
-	UC14(["UC-14 Detail Perjanjian & Dokumen"])
 	UC15(["UC-15 Lihat Tagihan Sewa"])
-	UC16(["UC-16 Checkout (Generate VA)"])
 	UC17(["UC-17 Monitoring Pembayaran (VA)"])
 	UC18(["UC-18 Riwayat Pembayaran"])
 	UC19(["UC-19 Profil & Logout"])
@@ -51,18 +45,12 @@ flowchart LR
 	M --> UC02
 	M --> UC03
 	M --> UC04
-	M --> UC05
 	M --> UC06
-	M --> UC07
 	M --> UC08
-	M --> UC09
 	M --> UC10
 	M --> UC11
-	M --> UC12
 	M --> UC13
-	M --> UC14
 	M --> UC15
-	M --> UC16
 	M --> UC17
 	M --> UC18
 	M --> UC19
@@ -177,32 +165,9 @@ flowchart LR
 
 ---
 
-## UC-05 — Home (Dashboard) & Navigasi
-
-**Tabel 3.5. Use Case Scenario Masyarakat Mengakses Home & Navigasi**
-
-| Elemen               | Isi                                                                                                               |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Use Case ID          | UC-05                                                                                                             |
-| Use Case Name        | Home & Navigasi Menu                                                                                              |
-| Use Case Description | Use case ini menjelaskan pengguna mengakses home setelah login dan berpindah fitur menggunakan bottom navigation. |
-| Primary Actor        | Masyarakat                                                                                                        |
-| Secondary Actor      | Sistem                                                                                                            |
-| Precondition         | 1. Pengguna sudah login<br>2. Sesi tersimpan di perangkat                                                         |
-
-| Flow                     | User Action                                                       | System Response                                           |
-| ------------------------ | ----------------------------------------------------------------- | --------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna masuk ke halaman home.                                | 2. Sistem menampilkan halaman home dan bottom navigation. |
-|                          | 3. Pengguna memilih menu (Permohonan/Tagihan/Pembayaran/Profile). | 4. Sistem menampilkan halaman sesuai menu yang dipilih.   |
-| Alternate Flow of Events | Pengguna kembali ke menu sebelumnya.                              | Sistem menampilkan halaman sebelumnya.                    |
-| Error Flow of Events     | Sesi habis/unauthorized saat membuka fitur.                       | Sistem mengarahkan pengguna ke login.                     |
-| Post Condition           |                                                                   | Pengguna berada pada halaman fitur yang dipilih.          |
-
----
-
 ## UC-06 — Daftar Objek Retribusi (Katalog Aset)
 
-**Tabel 3.6. Use Case Scenario Masyarakat Melihat Daftar Objek Retribusi**
+**Tabel 3.5. Use Case Scenario Masyarakat Melihat Daftar Objek Retribusi**
 
 | Elemen               | Isi                                                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -213,45 +178,20 @@ flowchart LR
 | Secondary Actor      | Sistem                                                                                                                     |
 | Precondition         | 1. Pengguna sudah login<br>2. Koneksi internet tersedia                                                                    |
 
-| Flow                     | User Action                                      | System Response                                                           |
-| ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna membuka menu daftar objek retribusi. | 2. Sistem memanggil API list objek retribusi dan menampilkan daftar.      |
-|                          | 3. Pengguna mengetik kata kunci pencarian.       | 4. Sistem memfilter hasil (debounce) dan memuat ulang daftar dari server. |
-|                          | 5. Pengguna memilih filter kecamatan.            | 6. Sistem memuat ulang daftar sesuai filter.                              |
-| Alternate Flow of Events | Pengguna menghapus filter/pencarian.             | Sistem menampilkan daftar default (tanpa filter).                         |
-| Error Flow of Events     | Server tidak dapat diakses/gagal memuat data.    | Sistem menampilkan pesan gagal memuat data.                               |
-|                          | Unauthorized (token invalid).                    | Sistem mengarahkan pengguna ke login.                                     |
-| Post Condition           |                                                  | Daftar objek retribusi tampil sesuai pencarian/filter.                    |
-
----
-
-## UC-07 — Detail Objek Retribusi
-
-**Tabel 3.7. Use Case Scenario Masyarakat Melihat Detail Objek Retribusi**
-
-| Elemen               | Isi                                                                                                                    |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Use Case ID          | UC-07                                                                                                                  |
-| Use Case Name        | Lihat Detail Objek Retribusi                                                                                           |
-| Use Case Description | Use case ini menjelaskan pengguna melihat rincian objek retribusi tertentu termasuk gambar dari storage jika tersedia. |
-| Primary Actor        | Masyarakat                                                                                                             |
-| Secondary Actor      | Sistem                                                                                                                 |
-| Precondition         | 1. Pengguna sudah login<br>2. Pengguna berada pada daftar objek retribusi                                              |
-
-| Flow                     | User Action                                                 | System Response                                                                   |
-| ------------------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna memilih salah satu objek retribusi dari daftar. | 2. Sistem memanggil API detail objek retribusi dan menampilkan informasi lengkap. |
-|                          | 3. Pengguna melihat detail (kode, nama, lokasi, dll).       | 4. Sistem menampilkan detail dan menampilkan gambar jika URL tersedia.            |
-| Alternate Flow of Events | Pengguna menekan tombol kembali.                            | Sistem kembali ke daftar objek retribusi.                                         |
-| Error Flow of Events     | Detail gagal dimuat (network/server).                       | Sistem menampilkan pesan kesalahan.                                               |
-|                          | Unauthorized (token invalid).                               | Sistem mengarahkan pengguna ke login.                                             |
-| Post Condition           |                                                             | Detail objek retribusi tampil.                                                    |
-
----
+| Flow                     | User Action                                                 | System Response                                                                                  |
+| ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Primary Flow of Events   | 1. Pengguna membuka menu daftar objek retribusi.            | 2. Sistem memanggil API list objek retribusi dan menampilkan daftar.                             |
+|                          | 3. Pengguna mengetik kata kunci pencarian.                  | 4. Sistem memfilter hasil (debounce) dan memuat ulang daftar dari server.                        |
+|                          | 5. Pengguna memilih filter kecamatan.                       | 6. Sistem memuat ulang daftar sesuai filter.                                                     |
+|                          | 7. Pengguna memilih salah satu objek dari daftar.           | 8. Sistem memanggil API detail objek retribusi dan menampilkan informasi lengkap (termasuk foto). |
+| Alternate Flow of Events | Pengguna menghapus filter/pencarian.                        | Sistem menampilkan daftar default (tanpa filter).                                                |
+| Error Flow of Events     | Server tidak dapat diakses/gagal memuat data (list/detail). | Sistem menampilkan pesan gagal memuat data.                                                      |
+|                          | Unauthorized (token invalid).                               | Sistem mengarahkan pengguna ke login.                                                            |
+| Post Condition           |                                                             | Daftar objek tampil; detail objek dapat ditampilkan saat dipilih.                                |
 
 ## UC-08 — Daftar Tarif Objek Retribusi
 
-**Tabel 3.8. Use Case Scenario Masyarakat Melihat Daftar Tarif Sewa**
+**Tabel 3.6. Use Case Scenario Masyarakat Melihat Daftar Tarif Sewa**
 
 | Elemen               | Isi                                                                                                   |
 | -------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -262,44 +202,22 @@ flowchart LR
 | Secondary Actor      | Sistem                                                                                                |
 | Precondition         | 1. Pengguna sudah login<br>2. Koneksi internet tersedia                                               |
 
-| Flow                     | User Action                                | System Response                                            |
-| ------------------------ | ------------------------------------------ | ---------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna membuka menu daftar tarif.     | 2. Sistem memanggil API daftar tarif dan menampilkan data. |
-|                          | 3. Pengguna mengetik kata kunci pencarian. | 4. Sistem memfilter daftar tarif berdasarkan kata kunci.   |
-| Alternate Flow of Events | Pengguna menghapus kata kunci pencarian.   | Sistem menampilkan seluruh daftar tarif kembali.           |
-| Error Flow of Events     | Gagal memuat data tarif.                   | Sistem menampilkan pesan error.                            |
-|                          | Unauthorized.                              | Sistem mengarahkan pengguna ke login.                      |
-| Post Condition           |                                            | Daftar tarif tampil sesuai filter.                         |
-
----
-
-## UC-09 — Detail Tarif + Dokumen
-
-**Tabel 3.9. Use Case Scenario Masyarakat Melihat Detail Tarif Sewa**
-
-| Elemen               | Isi                                                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Use Case ID          | UC-09                                                                                                            |
-| Use Case Name        | Lihat Detail Tarif Sewa                                                                                          |
-| Use Case Description | Use case ini menjelaskan pengguna melihat detail tarif dan membuka dokumen tarif (jika tersedia) melalui tautan. |
-| Primary Actor        | Masyarakat                                                                                                       |
-| Secondary Actor      | Sistem                                                                                                           |
-| Precondition         | 1. Pengguna sudah login<br>2. Pengguna berada pada daftar tarif                                                  |
-
-| Flow                     | User Action                                          | System Response                                                 |
-| ------------------------ | ---------------------------------------------------- | --------------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna memilih salah satu tarif dari daftar.    | 2. Sistem memanggil API detail tarif dan menampilkan informasi. |
-|                          | 3. Pengguna menekan tautan dokumen tarif (jika ada). | 4. Sistem membuka dokumen melalui browser/viewer.               |
-| Alternate Flow of Events | Dokumen tarif tidak tersedia.                        | Sistem hanya menampilkan detail tanpa tautan dokumen.           |
-| Error Flow of Events     | Detail tarif gagal dimuat.                           | Sistem menampilkan pesan error.                                 |
-|                          | Gagal membuka tautan dokumen.                        | Sistem menampilkan pesan gagal membuka dokumen.                 |
-| Post Condition           |                                                      | Detail tarif tampil dan dokumen terbuka jika tersedia.          |
-
----
+| Flow                     | User Action                                             | System Response                                                                       |
+| ------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Primary Flow of Events   | 1. Pengguna membuka menu daftar tarif.                  | 2. Sistem memanggil API daftar tarif dan menampilkan data.                            |
+|                          | 3. Pengguna mengetik kata kunci pencarian.              | 4. Sistem memfilter daftar tarif berdasarkan kata kunci.                              |
+|                          | 5. Pengguna memilih salah satu tarif dari daftar.       | 6. Sistem memanggil API detail tarif dan menampilkan informasi.                       |
+|                          | 7. Pengguna menekan tautan dokumen tarif (jika tersedia). | 8. Sistem membuka dokumen melalui browser/viewer.                                      |
+| Alternate Flow of Events | Pengguna menghapus kata kunci pencarian.                | Sistem menampilkan seluruh daftar tarif kembali.                                      |
+|                          | Dokumen tarif tidak tersedia.                           | Sistem hanya menampilkan detail tanpa tautan dokumen.                                 |
+| Error Flow of Events     | Gagal memuat data tarif (list/detail).                  | Sistem menampilkan pesan error.                                                       |
+|                          | Gagal membuka tautan dokumen.                           | Sistem menampilkan pesan gagal membuka dokumen.                                       |
+|                          | Unauthorized.                                           | Sistem mengarahkan pengguna ke login.                                                 |
+| Post Condition           |                                                         | Daftar tarif tampil; detail & dokumen (jika ada) dapat diakses saat tarif dipilih.    |
 
 ## UC-10 — Buat Permohonan Sewa
 
-**Tabel 3.10. Use Case Scenario Masyarakat Membuat Permohonan Sewa**
+**Tabel 3.7. Use Case Scenario Masyarakat Membuat Permohonan Sewa**
 
 | Elemen               | Isi                                                                                                                                    |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -328,7 +246,7 @@ flowchart LR
 
 ## UC-11 — Lihat Riwayat Permohonan
 
-**Tabel 3.11. Use Case Scenario Masyarakat Melihat Riwayat Permohonan**
+**Tabel 3.8. Use Case Scenario Masyarakat Melihat Riwayat Permohonan**
 
 | Elemen               | Isi                                                                                               |
 | -------------------- | ------------------------------------------------------------------------------------------------- |
@@ -339,44 +257,19 @@ flowchart LR
 | Secondary Actor      | Sistem                                                                                            |
 | Precondition         | 1. Pengguna sudah login<br>2. Koneksi internet tersedia                                           |
 
-| Flow                     | User Action                                        | System Response                                            |
-| ------------------------ | -------------------------------------------------- | ---------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna membuka menu/tab “Riwayat Permohonan”. | 2. Sistem memanggil API permohonan berdasarkan idPersonal. |
-|                          | 3. Pengguna melihat daftar permohonan.             | 4. Sistem menampilkan daftar permohonan dan status.        |
-| Alternate Flow of Events | Tidak ada data permohonan.                         | Sistem menampilkan informasi bahwa data kosong.            |
-| Error Flow of Events     | Gagal memuat data.                                 | Sistem menampilkan pesan error.                            |
-|                          | Unauthorized.                                      | Sistem mengarahkan pengguna ke login.                      |
-| Post Condition           |                                                    | Daftar permohonan tampil.                                  |
-
----
-
-## UC-12 — Detail Permohonan
-
-**Tabel 3.12. Use Case Scenario Masyarakat Melihat Detail Permohonan**
-
-| Elemen               | Isi                                                                                                             |
-| -------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Use Case ID          | UC-12                                                                                                           |
-| Use Case Name        | Lihat Detail Permohonan                                                                                         |
-| Use Case Description | Use case ini menjelaskan pengguna membuka detail permohonan tertentu untuk melihat rincian dan dokumen terkait. |
-| Primary Actor        | Masyarakat                                                                                                      |
-| Secondary Actor      | Sistem                                                                                                          |
-| Precondition         | 1. Pengguna sudah login<br>2. Pengguna sudah berada di daftar permohonan                                        |
-
-| Flow                     | User Action                                                             | System Response                                    |
-| ------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna memilih salah satu permohonan dari daftar.                  | 2. Sistem memanggil API detail permohonan.         |
-|                          | 3. Pengguna melihat rincian (kode objek, nama, NIK, file dokumen, dll). | 4. Sistem menampilkan detail permohonan.           |
-| Alternate Flow of Events | Pengguna kembali ke daftar permohonan.                                  | Sistem menampilkan daftar permohonan.              |
-| Error Flow of Events     | Detail gagal dimuat.                                                    | Sistem menampilkan pesan error dan opsi coba lagi. |
-|                          | Unauthorized.                                                           | Sistem mengarahkan pengguna ke login.              |
-| Post Condition           |                                                                         | Detail permohonan tampil.                          |
-
----
+| Flow                     | User Action                                                     | System Response                                                         |
+| ------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Primary Flow of Events   | 1. Pengguna membuka menu/tab “Riwayat Permohonan”.              | 2. Sistem memanggil API permohonan berdasarkan idPersonal.              |
+|                          | 3. Pengguna melihat daftar permohonan dan statusnya.            | 4. Sistem menampilkan daftar permohonan.                                |
+|                          | 5. Pengguna memilih salah satu permohonan untuk melihat detail. | 6. Sistem memanggil API detail permohonan dan menampilkan rincian.      |
+| Alternate Flow of Events | Tidak ada data permohonan.                                      | Sistem menampilkan informasi bahwa data kosong.                         |
+| Error Flow of Events     | Gagal memuat data (list/detail).                                | Sistem menampilkan pesan error.                                         |
+|                          | Unauthorized.                                                   | Sistem mengarahkan pengguna ke login.                                   |
+| Post Condition           |                                                                 | Riwayat permohonan tampil; detail permohonan dapat ditampilkan saat dipilih. |
 
 ## UC-13 — Lihat Perjanjian Sewa
 
-**Tabel 3.13. Use Case Scenario Masyarakat Melihat Daftar Perjanjian Sewa**
+**Tabel 3.9. Use Case Scenario Masyarakat Melihat Daftar Perjanjian Sewa**
 
 | Elemen               | Isi                                                                                   |
 | -------------------- | ------------------------------------------------------------------------------------- |
@@ -387,44 +280,21 @@ flowchart LR
 | Secondary Actor      | Sistem                                                                                |
 | Precondition         | 1. Pengguna sudah login<br>2. Koneksi internet tersedia                               |
 
-| Flow                     | User Action                            | System Response                                            |
-| ------------------------ | -------------------------------------- | ---------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna membuka menu Perjanjian.   | 2. Sistem memanggil API perjanjian berdasarkan idPersonal. |
-|                          | 3. Pengguna melihat daftar perjanjian. | 4. Sistem menampilkan daftar perjanjian dan status.        |
-| Alternate Flow of Events | Tidak ada perjanjian.                  | Sistem menampilkan data kosong.                            |
-| Error Flow of Events     | Gagal memuat data.                     | Sistem menampilkan pesan error.                            |
-|                          | Unauthorized.                          | Sistem mengarahkan pengguna ke login.                      |
-| Post Condition           |                                        | Daftar perjanjian tampil.                                  |
-
----
-
-## UC-14 — Detail Perjanjian + Buka Dokumen
-
-**Tabel 3.14. Use Case Scenario Masyarakat Melihat Detail Perjanjian Sewa**
-
-| Elemen               | Isi                                                                                                                           |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Use Case ID          | UC-14                                                                                                                         |
-| Use Case Name        | Lihat Detail Perjanjian Sewa                                                                                                  |
-| Use Case Description | Use case ini menjelaskan pengguna melihat detail perjanjian sewa dan membuka dokumen perjanjian dari storage (jika tersedia). |
-| Primary Actor        | Masyarakat                                                                                                                    |
-| Secondary Actor      | Sistem                                                                                                                        |
-| Precondition         | 1. Pengguna sudah login<br>2. Pengguna berada di daftar perjanjian                                                            |
-
-| Flow                     | User Action                                                    | System Response                                                    |
-| ------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Primary Flow of Events   | 1. Pengguna memilih perjanjian dari daftar.                    | 2. Sistem memanggil API detail perjanjian dan menampilkan rincian. |
-|                          | 3. Pengguna menekan tautan “File Surat Perjanjian” (jika ada). | 4. Sistem membuka dokumen melalui browser/viewer.                  |
-| Alternate Flow of Events | Dokumen tidak tersedia.                                        | Sistem hanya menampilkan detail tanpa tautan dokumen.              |
-| Error Flow of Events     | Detail gagal dimuat.                                           | Sistem menampilkan pesan error.                                    |
-|                          | Gagal membuka dokumen.                                         | Sistem menampilkan pesan gagal membuka dokumen.                    |
-| Post Condition           |                                                                | Detail perjanjian tampil dan dokumen terbuka jika tersedia.        |
-
----
+| Flow                     | User Action                                              | System Response                                                                    |
+| ------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Primary Flow of Events   | 1. Pengguna membuka menu Perjanjian.                     | 2. Sistem memanggil API perjanjian berdasarkan idPersonal dan menampilkan daftar. |
+|                          | 3. Pengguna memilih salah satu perjanjian dari daftar.   | 4. Sistem memanggil API detail perjanjian dan menampilkan rincian.                 |
+|                          | 5. Pengguna menekan tautan dokumen perjanjian (jika ada). | 6. Sistem membuka dokumen melalui browser/viewer.                                  |
+| Alternate Flow of Events | Tidak ada perjanjian.                                    | Sistem menampilkan data kosong.                                                    |
+|                          | Dokumen tidak tersedia.                                  | Sistem hanya menampilkan detail tanpa tautan dokumen.                              |
+| Error Flow of Events     | Gagal memuat data (list/detail).                         | Sistem menampilkan pesan error.                                                    |
+|                          | Gagal membuka dokumen.                                   | Sistem menampilkan pesan gagal membuka dokumen.                                    |
+|                          | Unauthorized.                                            | Sistem mengarahkan pengguna ke login.                                              |
+| Post Condition           |                                                          | Daftar perjanjian tampil; detail & dokumen (jika ada) dapat diakses saat dipilih.  |
 
 ## UC-15 — Lihat Tagihan Sewa
 
-**Tabel 3.15. Use Case Scenario Masyarakat Melihat Daftar Tagihan Sewa**
+**Tabel 3.10. Use Case Scenario Masyarakat Melihat Daftar Tagihan Sewa**
 
 | Elemen               | Isi                                                                                                           |
 | -------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -435,46 +305,22 @@ flowchart LR
 | Secondary Actor      | Sistem                                                                                                        |
 | Precondition         | 1. Pengguna sudah login<br>2. Koneksi internet tersedia                                                       |
 
-| Flow                     | User Action                                                        | System Response                                                                |
-| ------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| Primary Flow of Events   | 1. Pengguna membuka menu Tagihan.                                  | 2. Sistem memanggil API tagihan berdasarkan idPersonal dan menampilkan daftar. |
-|                          | 3. Pengguna memilih item tagihan/perjanjian untuk melihat rincian. | 4. Sistem menampilkan detail sewa/tagihan (unpaid).                            |
-| Alternate Flow of Events | Tidak ada tagihan.                                                 | Sistem menampilkan data kosong.                                                |
-| Error Flow of Events     | Gagal memuat data.                                                 | Sistem menampilkan pesan error.                                                |
-|                          | Unauthorized.                                                      | Sistem mengarahkan pengguna ke login.                                          |
-| Post Condition           |                                                                    | Daftar tagihan tampil.                                                         |
-
----
-
-## UC-16 — Checkout Tagihan (Generate VA)
-
-**Tabel 3.16. Use Case Scenario Masyarakat Melakukan Checkout Tagihan**
-
-| Elemen               | Isi                                                                                                                                                       |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Use Case ID          | UC-16                                                                                                                                                     |
-| Use Case Name        | Checkout Tagihan                                                                                                                                          |
-| Use Case Description | Use case ini menjelaskan pengguna memilih salah satu tagihan yang belum lunas lalu melakukan checkout untuk menghasilkan data pembayaran Virtual Account. |
-| Primary Actor        | Masyarakat                                                                                                                                                |
-| Secondary Actor      | Sistem                                                                                                                                                    |
-| Precondition         | 1. Pengguna sudah login<br>2. Pengguna berada pada detail sewa/tagihan<br>3. Terdapat tagihan belum lunas                                                 |
-
-| Flow                     | User Action                                                   | System Response                                                            |
-| ------------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Primary Flow of Events   | 1. Pengguna mencentang salah satu tagihan yang belum dibayar. | 2. Sistem menyimpan pilihan tagihan dan menghitung total tagihan terpilih. |
-|                          | 3. Pengguna menekan tombol checkout/bayar.                    | 4. Sistem mengirim permintaan checkout ke server.                          |
-|                          |                                                               | 5. Sistem menerima response berisi data pembayaran (misal trxId/VA).       |
-|                          |                                                               | 6. Sistem mengarahkan pengguna ke halaman pembayaran VA.                   |
-| Alternate Flow of Events | Pengguna tidak mencentang tagihan lalu menekan checkout.      | Sistem menampilkan peringatan untuk memilih tagihan terlebih dahulu.       |
-| Error Flow of Events     | Checkout gagal (server error).                                | Sistem menampilkan pesan gagal.                                            |
-|                          | Unauthorized.                                                 | Sistem mengarahkan pengguna ke login.                                      |
-| Post Condition           |                                                               | Data pembayaran terbentuk dan pengguna berada di halaman pembayaran.       |
+| Flow                     | User Action                                                                 | System Response                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Primary Flow of Events   | 1. Pengguna membuka menu Tagihan.                                           | 2. Sistem memanggil API tagihan berdasarkan idPersonal dan menampilkan daftar.                      |
+|                          | 3. Pengguna memilih item tagihan/perjanjian untuk melihat rincian.          | 4. Sistem menampilkan detail sewa/tagihan (unpaid).                                                 |
+|                          | 5. Pengguna menekan tombol bayar/lanjut pembayaran pada tagihan yang dipilih. | 6. Sistem meminta/menampilkan informasi pembayaran (termasuk nomor Virtual Account jika tersedia). |
+|                          |                                                                             | 7. Sistem mengarahkan pengguna ke halaman pembayaran VA untuk monitoring status.                    |
+| Alternate Flow of Events | Tidak ada tagihan.                                                          | Sistem menampilkan data kosong.                                                                     |
+| Error Flow of Events     | Gagal memuat data.                                                          | Sistem menampilkan pesan error.                                                                     |
+|                          | Unauthorized.                                                               | Sistem mengarahkan pengguna ke login.                                                               |
+| Post Condition           |                                                                             | Pengguna berada pada detail tagihan atau halaman pembayaran VA (jika proses bayar dilanjutkan).     |
 
 ---
 
 ## UC-17 — Pembayaran Virtual Account (Monitoring Status)
 
-**Tabel 3.17. Use Case Scenario Masyarakat Melakukan Pembayaran Virtual Account**
+**Tabel 3.11. Use Case Scenario Masyarakat Melakukan Pembayaran Virtual Account**
 
 | Elemen               | Isi                                                                                                                                                               |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -483,7 +329,7 @@ flowchart LR
 | Use Case Description | Use case ini menjelaskan pengguna melakukan pembayaran menggunakan nomor Virtual Account yang diberikan, lalu sistem memonitor status pembayaran secara otomatis. |
 | Primary Actor        | Masyarakat                                                                                                                                                        |
 | Secondary Actor      | Sistem                                                                                                                                                            |
-| Precondition         | 1. Pengguna sudah melakukan checkout tagihan<br>2. Sistem menampilkan nomor VA dan informasi pembayaran<br>3. Koneksi internet tersedia                           |
+| Precondition         | 1. Pengguna sudah login<br>2. Pengguna memilih tagihan yang belum lunas dan sistem menampilkan nomor VA/informasi pembayaran<br>3. Koneksi internet tersedia       |
 
 | Flow                     | User Action                                                                                  | System Response                                                                                 |
 | ------------------------ | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -499,7 +345,7 @@ flowchart LR
 
 ## UC-18 — Riwayat Pembayaran
 
-**Tabel 3.18. Use Case Scenario Masyarakat Melihat Riwayat Pembayaran**
+**Tabel 3.12. Use Case Scenario Masyarakat Melihat Riwayat Pembayaran**
 
 | Elemen               | Isi                                                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -524,7 +370,7 @@ flowchart LR
 
 ## UC-19 — Profil & Logout
 
-**Tabel 3.19. Use Case Scenario Masyarakat Melihat Profil dan Logout**
+**Tabel 3.13. Use Case Scenario Masyarakat Melihat Profil dan Logout**
 
 | Elemen               | Isi                                                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -549,7 +395,7 @@ flowchart LR
 
 ## UC-A1 — Login Admin
 
-**Tabel 3.20. Use Case Scenario Petugas Melakukan Login Admin**
+**Tabel 3.14. Use Case Scenario Petugas Melakukan Login Admin**
 
 | Elemen               | Isi                                                                                                      |
 | -------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -572,7 +418,7 @@ flowchart LR
 
 ## UC-A2 — Dashboard Admin & Navigasi
 
-**Tabel 3.21. Use Case Scenario Petugas Mengakses Dashboard Admin**
+**Tabel 3.15. Use Case Scenario Petugas Mengakses Dashboard Admin**
 
 | Elemen               | Isi                                                                                                                           |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -595,7 +441,7 @@ flowchart LR
 
 ## UC-A3 — Monitoring Permohonan
 
-**Tabel 3.22. Use Case Scenario Petugas Melihat Daftar Permohonan**
+**Tabel 3.16. Use Case Scenario Petugas Melihat Daftar Permohonan**
 
 | Elemen               | Isi                                                                               |
 | -------------------- | --------------------------------------------------------------------------------- |
@@ -618,7 +464,7 @@ flowchart LR
 
 ## UC-A4 — Monitoring Perjanjian & Tagihan
 
-**Tabel 3.23. Use Case Scenario Petugas Melihat Perjanjian dan Tagihan**
+**Tabel 3.17. Use Case Scenario Petugas Melihat Perjanjian dan Tagihan**
 
 | Elemen               | Isi                                                                                                            |
 | -------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -641,7 +487,7 @@ flowchart LR
 
 ## UC-A5 — Monitoring Pembayaran
 
-**Tabel 3.24. Use Case Scenario Petugas Memonitor Pembayaran**
+**Tabel 3.18. Use Case Scenario Petugas Memonitor Pembayaran**
 
 | Elemen               | Isi                                                                                                      |
 | -------------------- | -------------------------------------------------------------------------------------------------------- |
