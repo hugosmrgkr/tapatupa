@@ -14,6 +14,66 @@ Dokumen ini merangkum use case scenario untuk 2 role:
 
 Format tabel mengikuti contoh yang kamu kirim.
 
+## Use Case Diagram
+
+```mermaid
+flowchart LR
+	M["<<actor>> Masyarakat"]
+	A["<<actor>> Petugas Lapangan (Admin)"]
+
+	UC01(["UC-01 Memulai Aplikasi (Splash/Loading)"])
+	UC02(["UC-02 Onboarding"])
+	UC03(["UC-03 Registrasi Akun"])
+	UC04(["UC-04 Login Pengguna"])
+	UC05(["UC-05 Dashboard & Navigasi"])
+	UC06(["UC-06 Daftar Objek Retribusi"])
+	UC07(["UC-07 Detail Objek Retribusi"])
+	UC08(["UC-08 Daftar Tarif Objek"])
+	UC09(["UC-09 Detail Tarif & Dokumen"])
+	UC10(["UC-10 Buat Permohonan Sewa"])
+	UC11(["UC-11 Riwayat Permohonan"])
+	UC12(["UC-12 Detail Permohonan"])
+	UC13(["UC-13 Lihat Perjanjian Sewa"])
+	UC14(["UC-14 Detail Perjanjian & Dokumen"])
+	UC15(["UC-15 Lihat Tagihan Sewa"])
+	UC16(["UC-16 Checkout (Generate VA)"])
+	UC17(["UC-17 Monitoring Pembayaran (VA)"])
+	UC18(["UC-18 Riwayat Pembayaran"])
+	UC19(["UC-19 Profil & Logout"])
+
+	UCA1(["UC-A1 Login Admin"])
+	UCA2(["UC-A2 Dashboard Admin & Navigasi"])
+	UCA3(["UC-A3 Monitoring Permohonan"])
+	UCA4(["UC-A4 Monitoring Perjanjian & Tagihan"])
+	UCA5(["UC-A5 Monitoring Pembayaran"])
+
+	M --> UC01
+	M --> UC02
+	M --> UC03
+	M --> UC04
+	M --> UC05
+	M --> UC06
+	M --> UC07
+	M --> UC08
+	M --> UC09
+	M --> UC10
+	M --> UC11
+	M --> UC12
+	M --> UC13
+	M --> UC14
+	M --> UC15
+	M --> UC16
+	M --> UC17
+	M --> UC18
+	M --> UC19
+
+	A --> UCA1
+	A --> UCA2
+	A --> UCA3
+	A --> UCA4
+	A --> UCA5
+```
+
 ---
 
 ## UC-01 — Splash/Loading & Navigasi Awal
