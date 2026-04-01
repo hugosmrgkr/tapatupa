@@ -169,112 +169,113 @@ flowchart LR
 
 ## CDM (Conceptual Data Model)
 
-CDM berikut merangkum model data **tingkat konsep** (untuk kebutuhan analisis/dokumentasi) dari domain `asset-service`. Diagram ini tidak menampilkan detail tipe data/kolom audit, namun mempertahankan entitas dan relasi intinya.
+CDM berikut merangkum model data dari domain `asset-service` dengan **format kotak-atribut** seperti contoh yang kamu kirim (mudah dibaca di laporan). Fokusnya entitas inti + relasi, bukan semua kolom audit.
+
+Keterangan:
+- `village_id` dan `location_catalog_item_id` adalah **logical reference** (tanpa FK hard) ke layanan konfigurasi/lookup.
 
 ```mermaid
-flowchart LR
-  %% =========================
-  %% Conceptual Entities
-  %% =========================
-  Cat[AssetCategory]
-  Type[AssetType]
-  Asset[Asset]
-  Photo[AssetPhoto]
-  Doc[AssetDocument]
-  TypeTariff[AssetTypeTariff]
-  Tier[TariffTier]
-  Override[IndividualTariffOverride]
-  RentalCfg[AssetRentalConfig]
+erDiagram
+  ASSET_CATEGORY {
+    bigint id PK
+    string tenant_id
+    string code
+    string name
+    boolean is_active
+  }
 
-  %% =========================
-  %% Relationships (diamonds)
-  %% =========================
-  RC1{"has"}
-  RC2{"classifies"}
-  RC3{"has"}
-  RC4{"has"}
-  RC5{"has"}
-  RC6{"has"}
-  RC7{"overrides"}
-  RC8{"configured_by"}
+  ASSET_TYPE {
+    bigint id PK
+    string tenant_id
+    bigint category_id FK
+    string code
+    string name
+    string tariff_unit
+    boolean is_active
+  }
 
-  %% =========================
-  %% Cardinalities
-  %% =========================
-  Cat -- "1" --- RC1
-  RC1 -- "N" --- Type
+  ASSET {
+    bigint id PK
+    string tenant_id
+    bigint asset_type_id FK
+    string code
+    string name
+    string status
+    float area_m2
+    float valuation
+    int valuation_year
+    bigint village_id
+    bigint location_catalog_item_id
+    string payload_json
+  }
 
-  Type -- "1" --- RC2
-  RC2 -- "N" --- Asset
+  ASSET_PHOTO {
+    bigint id PK
+    string tenant_id
+    bigint asset_id FK
+    string storage_path
+    boolean is_primary
+  }
 
-  Asset -- "1" --- RC3
-  RC3 -- "N" --- Photo
+  ASSET_DOCUMENT {
+    bigint id PK
+    string tenant_id
+    bigint asset_id FK
+    string document_type
+    string storage_path
+    string file_name
+  }
 
-  Asset -- "1" --- RC4
-  RC4 -- "N" --- Doc
+  ASSET_TYPE_TARIFF {
+    bigint id PK
+    string tenant_id
+    bigint asset_type_id FK
+    string status
+    string effective_date
+    string expired_date
+    float base_tariff
+  }
 
-  Type -- "1" --- RC5
-  RC5 -- "N" --- TypeTariff
+  TARIFF_TIER {
+    bigint id PK
+    bigint tariff_id FK
+    float min_value
+    float max_value
+    float tariff_amount
+  }
 
-  TypeTariff -- "1" --- RC6
-  RC6 -- "0..N" --- Tier
+  INDIVIDUAL_TARIFF_OVERRIDE {
+    bigint id PK
+    string tenant_id
+    bigint asset_id FK
+    float tariff_amount
+    string effective_date
+    string expired_date
+    string reason
+  }
 
-  Asset -- "1" --- RC7
-  RC7 -- "0..N" --- Override
+  ASSET_RENTAL_CONFIG {
+    bigint id PK
+    string tenant_id
+    bigint asset_id FK
+    int min_rental_months
+    int max_rental_months
+    int deposit_months
+    string billing_cycle
+  }
 
-  Asset -- "1" --- RC8
-  RC8 -- "0..1" --- RentalCfg
+  %% Relasi (kardinalitas)
+  ASSET_CATEGORY ||--o{ ASSET_TYPE : "mempunyai"
+  ASSET_TYPE ||--o{ ASSET : "mengklasifikasikan"
 
-  %% =========================
-  %% Key conceptual attributes (minimal)
-  %% =========================
-  Cat_id((category_id)) --- Cat
-  Cat_code((code)) --- Cat
-  Cat_name((name)) --- Cat
+  ASSET ||--o{ ASSET_PHOTO : "memiliki"
+  ASSET ||--o{ ASSET_DOCUMENT : "memiliki"
 
-  Type_id((type_id)) --- Type
-  Type_code((code)) --- Type
-  Type_name((name)) --- Type
-  Type_unit((tariff_unit)) --- Type
+  ASSET_TYPE ||--o{ ASSET_TYPE_TARIFF : "menetapkan"
+  ASSET_TYPE_TARIFF ||--o{ TARIFF_TIER : "memiliki"
 
-  Asset_id((asset_id)) --- Asset
-  Asset_code((code)) --- Asset
-  Asset_name((name)) --- Asset
-  Asset_status((status)) --- Asset
-  Asset_loc((village_id*)) --- Asset
-  Asset_zone((location_catalog_item_id*)) --- Asset
-
-  Photo_id((photo_id)) --- Photo
-  Photo_path((storage_path)) --- Photo
-  Photo_primary((is_primary)) --- Photo
-
-  Doc_id((document_id)) --- Doc
-  Doc_type((document_type)) --- Doc
-  Doc_path((storage_path)) --- Doc
-
-  TypeTariff_id((tariff_id)) --- TypeTariff
-  TypeTariff_status((status)) --- TypeTariff
-  TypeTariff_effective((effective_date)) --- TypeTariff
-  TypeTariff_base((base_tariff)) --- TypeTariff
-
-  Tier_id((tier_id)) --- Tier
-  Tier_range((min..max)) --- Tier
-  Tier_amount((tariff_amount)) --- Tier
-
-  Override_id((override_id)) --- Override
-  Override_amount((tariff_amount)) --- Override
-  Override_effective((effective_date)) --- Override
-
-  RentalCfg_id((config_id)) --- RentalCfg
-  RentalCfg_min((min_rental_months)) --- RentalCfg
-  RentalCfg_deposit((deposit_months)) --- RentalCfg
-  RentalCfg_cycle((billing_cycle)) --- RentalCfg
-
-  NoteCDM(["* logical reference (tanpa FK hard) ke layanan lain"]):::note
-  NoteCDM --- Asset_loc
-  NoteCDM --- Asset_zone
-
-  classDef note fill:#fff,stroke:#999,stroke-dasharray: 3 3,color:#333;
+  ASSET ||--o{ INDIVIDUAL_TARIFF_OVERRIDE : "override"
+  ASSET ||--o| ASSET_RENTAL_CONFIG : "dikonfigurasi"
 ```
 
 ---
