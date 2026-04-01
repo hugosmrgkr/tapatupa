@@ -96,25 +96,46 @@ sequenceDiagram
 
 ## 3.2.4.4 Sequence Diagram Masyarakat Melihat Aset Retribusi (UC-04)
 
-Diagram ini menggambarkan proses Masyarakat melihat daftar aset retribusi. Alur dimulai ketika pengguna membuka menu Aset Retribusi, lalu aplikasi meminta daftar aset ke server. Server mengembalikan data aset dan sistem menampilkannya dalam bentuk list. Pengguna dapat memilih salah satu aset untuk melihat detailnya. Jika terjadi kegagalan jaringan atau server, sistem menampilkan pesan error dan menyediakan opsi coba lagi.
+Diagram ini menggambarkan proses Masyarakat melihat daftar aset retribusi sesuai kontrak backend `asset-service`. Alur dimulai ketika pengguna membuka menu Aset Retribusi, lalu aplikasi mengirim request ke **nginx-gateway** (base path `/assets`) pada endpoint eksternal `GET /assets/api/v1/assets` dengan header wajib `Authorization: Bearer <token>`, `X-Tenant-Id`, dan `X-Request-Id`. Gateway meneruskan request tersebut ke `asset-service` sebagai `GET /api/v1/assets` untuk mengambil daftar aset beserta filter pencarian (misalnya `search`, `status`, `category`, `limit`, `offset`). Pengguna dapat memilih salah satu aset untuk melihat detailnya melalui endpoint eksternal `GET /assets/api/v1/assets/{id}` (yang diteruskan ke `GET /api/v1/assets/{id}`). Jika token/tenant tidak valid (401/403) atau terjadi kegagalan jaringan, sistem menampilkan pesan error dan menyediakan opsi coba lagi.
 
 ```mermaid
 sequenceDiagram
     actor U as Masyarakat
     participant App as Aplikasi
-    participant API as Server API
+    participant Cache as Cache/Sesi Lokal
+    participant GW as nginx-gateway
+    participant AS as asset-service
+    participant DB as Database
 
     U->>App: Buka menu Aset Retribusi
-    App->>API: GET /aset (list)
-    alt Berhasil
-        API-->>App: Daftar aset
-        App-->>U: Tampilkan list aset
-        U->>App: Pilih salah satu aset
-        App->>API: GET /aset/{id} (detail)
-        API-->>App: Detail aset
+    App->>Cache: Ambil token + tenantId
+    App->>App: Generate X-Request-Id
+
+    App->>GW: GET /assets/api/v1/assets?search=&status=&category=&limit=&offset=
+    Note over App,GW: Headers: Authorization (Bearer), X-Tenant-Id, X-Request-Id
+    GW->>AS: GET /api/v1/assets (forward)
+    Note over GW,AS: Forward headers (Bearer, X-Tenant-Id, X-Request-Id)
+    AS->>DB: Query assets (filter/paging)
+    DB-->>AS: Result set
+    AS-->>GW: 200 AssetListResponse (+ X-Request-Id)
+    GW-->>App: 200 AssetListResponse
+    App-->>U: Tampilkan list aset
+
+    U->>App: Pilih salah satu aset
+    App->>Cache: Ambil token + tenantId
+    App->>App: Generate X-Request-Id
+    App->>GW: GET /assets/api/v1/assets/{id}
+    Note over App,GW: Headers: Authorization (Bearer), X-Tenant-Id, X-Request-Id
+    GW->>AS: GET /api/v1/assets/{id} (forward)
+    AS->>DB: Query asset by id
+    DB-->>AS: Asset row (atau tidak ditemukan)
+    alt Asset ditemukan
+        AS-->>GW: 200 AssetGetResponse
+        GW-->>App: 200 AssetGetResponse
         App-->>U: Tampilkan detail aset
-    else Gagal
-        API-->>App: Error
+    else 401/403/404 atau network error
+        AS-->>GW: Error response
+        GW-->>App: Error response
         App-->>U: Tampilkan pesan gagal memuat
     end
 ```
