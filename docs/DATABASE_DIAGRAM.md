@@ -167,6 +167,118 @@ flowchart LR
 
 ---
 
+## CDM (Conceptual Data Model)
+
+CDM berikut merangkum model data **tingkat konsep** (untuk kebutuhan analisis/dokumentasi) dari domain `asset-service`. Diagram ini tidak menampilkan detail tipe data/kolom audit, namun mempertahankan entitas dan relasi intinya.
+
+```mermaid
+flowchart LR
+  %% =========================
+  %% Conceptual Entities
+  %% =========================
+  Cat[AssetCategory]
+  Type[AssetType]
+  Asset[Asset]
+  Photo[AssetPhoto]
+  Doc[AssetDocument]
+  TypeTariff[AssetTypeTariff]
+  Tier[TariffTier]
+  Override[IndividualTariffOverride]
+  RentalCfg[AssetRentalConfig]
+
+  %% =========================
+  %% Relationships (diamonds)
+  %% =========================
+  RC1{"has"}
+  RC2{"classifies"}
+  RC3{"has"}
+  RC4{"has"}
+  RC5{"has"}
+  RC6{"has"}
+  RC7{"overrides"}
+  RC8{"configured_by"}
+
+  %% =========================
+  %% Cardinalities
+  %% =========================
+  Cat -- "1" --- RC1
+  RC1 -- "N" --- Type
+
+  Type -- "1" --- RC2
+  RC2 -- "N" --- Asset
+
+  Asset -- "1" --- RC3
+  RC3 -- "N" --- Photo
+
+  Asset -- "1" --- RC4
+  RC4 -- "N" --- Doc
+
+  Type -- "1" --- RC5
+  RC5 -- "N" --- TypeTariff
+
+  TypeTariff -- "1" --- RC6
+  RC6 -- "0..N" --- Tier
+
+  Asset -- "1" --- RC7
+  RC7 -- "0..N" --- Override
+
+  Asset -- "1" --- RC8
+  RC8 -- "0..1" --- RentalCfg
+
+  %% =========================
+  %% Key conceptual attributes (minimal)
+  %% =========================
+  Cat_id((category_id)) --- Cat
+  Cat_code((code)) --- Cat
+  Cat_name((name)) --- Cat
+
+  Type_id((type_id)) --- Type
+  Type_code((code)) --- Type
+  Type_name((name)) --- Type
+  Type_unit((tariff_unit)) --- Type
+
+  Asset_id((asset_id)) --- Asset
+  Asset_code((code)) --- Asset
+  Asset_name((name)) --- Asset
+  Asset_status((status)) --- Asset
+  Asset_loc((village_id*)) --- Asset
+  Asset_zone((location_catalog_item_id*)) --- Asset
+
+  Photo_id((photo_id)) --- Photo
+  Photo_path((storage_path)) --- Photo
+  Photo_primary((is_primary)) --- Photo
+
+  Doc_id((document_id)) --- Doc
+  Doc_type((document_type)) --- Doc
+  Doc_path((storage_path)) --- Doc
+
+  TypeTariff_id((tariff_id)) --- TypeTariff
+  TypeTariff_status((status)) --- TypeTariff
+  TypeTariff_effective((effective_date)) --- TypeTariff
+  TypeTariff_base((base_tariff)) --- TypeTariff
+
+  Tier_id((tier_id)) --- Tier
+  Tier_range((min..max)) --- Tier
+  Tier_amount((tariff_amount)) --- Tier
+
+  Override_id((override_id)) --- Override
+  Override_amount((tariff_amount)) --- Override
+  Override_effective((effective_date)) --- Override
+
+  RentalCfg_id((config_id)) --- RentalCfg
+  RentalCfg_min((min_rental_months)) --- RentalCfg
+  RentalCfg_deposit((deposit_months)) --- RentalCfg
+  RentalCfg_cycle((billing_cycle)) --- RentalCfg
+
+  NoteCDM(["* logical reference (tanpa FK hard) ke layanan lain"]):::note
+  NoteCDM --- Asset_loc
+  NoteCDM --- Asset_zone
+
+  classDef note fill:#fff,stroke:#999,stroke-dasharray: 3 3,color:#333;
+```
+
+---
+
 ## Ringkasan Relasi
 
 - `asset_categories (1) — (N) asset_types`
