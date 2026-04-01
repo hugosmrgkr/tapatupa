@@ -1,5 +1,12 @@
 # Use Case Scenarios — TAPATUPA (berdasarkan struktur code)
 
+> Cara melihat seperti **laporan (bukan source markdown)** di VS Code:
+>
+> - Buka file ini, lalu tekan **Ctrl+Shift+V** (Markdown: Open Preview).
+> - Atau klik kanan tab file → **Open Preview to the Side**.
+>
+> (Opsional) Untuk dijadikan PDF: buka Preview → Print (atau pakai ekstensi “Markdown PDF”).
+
 Dokumen ini merangkum use case scenario untuk 2 role:
 
 - **Masyarakat (Pengguna)**
