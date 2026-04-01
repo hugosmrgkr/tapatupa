@@ -4,7 +4,7 @@
 > - Buka file ini lalu tekan **Ctrl+Shift+V** (Markdown: Open Preview)
 > - Atau klik kanan tab file → **Open Preview to the Side**
 
-Dokumen ini menggambarkan **ERD notasi Chen** untuk database `asset_db` milik `asset-service` (berdasarkan definisi tabel di `pajak-retribusi-platform/services/asset-service/database/sql/001_asset_schema.sql` dan perubahan lanjutan seperti `008_asset_location.sql`).
+Dokumen ini menggambarkan **ERD notasi Chen** untuk database `asset_db` milik `asset-service` (berdasarkan definisi tabel di `pajak-retribusi-platform/services/asset-service/database/sql/001_asset_schema.sql` dan perubahan lanjutan seperti `008_asset_location.sql` serta `010_rename_subdistrict_to_village.sql`).
 
 Catatan:
 - `tenant_id` dipakai hampir di semua tabel untuk isolasi multi-tenant.
