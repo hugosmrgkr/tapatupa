@@ -30,6 +30,9 @@
 
 ## UC-01 🔐 Login
 
+**Penjelasan Proses:**
+Pengguna membuka aplikasi dan masuk ke halaman login dengan memasukkan username dan password. Sistem memvalidasi data yang diinput, jika valid maka dikirim ke server untuk autentikasi. Setelah berhasil, sistem menyimpan token dan session lalu menampilkan dashboard home kepada pengguna.
+
 ### BPMN Flow
 
 ```mermaid
@@ -87,6 +90,9 @@ graph TD
 ---
 
 ## UC-02 📝 Registrasi
+
+**Penjelasan Proses:**
+Pengguna membuka halaman registrasi dan mengisi form dengan data diri lengkap (nama, email, password, dll). Sistem memvalidasi input untuk memastikan data lengkap dan format benar, kemudian mengecek apakah username atau email sudah terdaftar. Jika semua valid, akun baru disimpan ke database dan notifikasi konfirmasi dikirim ke pengguna.
 
 ### BPMN Flow
 
@@ -146,6 +152,9 @@ graph TD
 
 ## UC-03 🏠 Dashboard Home
 
+**Penjelasan Proses:**
+Setelah login, sistem mengecek validitas session pengguna. Jika valid, sistem memuat ringkasan data (permohonan pending, tagihan aktif, dll) dan menampilkan dashboard dengan menu navigasi. Pengguna dapat melihat overview dan memilih menu untuk mengakses fitur-fitur lain di aplikasi.
+
 ### BPMN Flow
 
 ```mermaid
@@ -201,6 +210,9 @@ graph TD
 ---
 
 ## UC-04 💼 Lihat Aset Retribusi
+
+**Penjelasan Proses:**
+Pengguna membuka menu aset untuk melihat daftar objek retribusi yang tersedia untuk disewa. Sistem mengecek validitas sesi dan meload data aset dari server, kemudian menampilkannya dalam bentuk list dengan foto, nama, lokasi, dan status. Pengguna dapat memilih salah satu aset untuk melihat detail lengkapnya.
 
 ### BPMN Flow
 
@@ -319,6 +331,9 @@ graph TD
 ---
 
 ## UC-06 📋 Buat Permohonan Sewa
+
+**Penjelasan Proses:**
+Pengguna membuka form permohonan sewa dan memilih aset yang ingin disewa beserta durasi. Sistem menampilkan form kosong dengan dropdown pilihan aset dan tanggal. Pengguna mengisi data permohonan, mengunggah dokumen pendukung (KTP, domisili, etc), dan submit. Sistem memvalidasi kelengkapan, menyimpan permohonan, dan generate nomor referensi sebagai bukti pengajuan.
 
 ### BPMN Flow
 
@@ -445,6 +460,9 @@ graph TD
 
 ## UC-08 📜 Lihat Perjanjian & Tagihan
 
+**Penjelasan Proses:**
+Pengguna membuka menu perjanjian untuk melihat kontrak sewa yang sudah disetujui dan tagihan yang harus dibayarkan berkaitan dengan perjanjian tersebut. Sistem memvalidasi sesi dan memload data perjanjian serta tagihan dari server. Pengguna dapat memilih salah satu item untuk melihat detail lengkap termasuk jumlah tagihan, tanggal jatuh tempo, dan status pembayaran.
+
 ### BPMN Flow
 
 ```mermaid
@@ -501,6 +519,9 @@ graph TD
 ---
 
 ## UC-09 💳 Bayar Tagihan
+
+**Penjelasan Proses:**
+Pengguna memilih tagihan yang ingin dibayar dari daftar tagihan belum bayar. Sistem secara otomatis generate nomor Virtual Account (VA) unik untuk transaksi pembayaran. Sistem menampilkan nomor VA dan instruksi pembayaran kepada pengguna. Pengguna melakukan transfer melalui bank, sistem monitoring status pembayaran, dan otomatis update status tagihan menjadi LUNAS ketika pembayaran terkonfirmasi.
 
 ### BPMN Flow
 
@@ -561,6 +582,9 @@ graph TD
 
 ## UC-10 🧾 Lihat Riwayat Pembayaran
 
+**Penjelasan Proses:**
+Pengguna membuka menu riwayat pembayaran untuk melihat daftar pembayaran yang sudah berhasil dan lunas. Sistem memvalidasi sesi pengguna dan memload riwayat pembayaran dari server. Pengguna dapat memilih salah satu pembayaran untuk melihat detail lengkap dan bukti transaksi (receipt), termasuk nomor VA, nominal, tanggal pembayaran, dan referensi transaksi.
+
 ### BPMN Flow
 
 ```mermaid
@@ -619,6 +643,9 @@ graph TD
 ---
 
 ## UC-11 👤 Profile & Logout
+
+**Penjelasan Proses:**
+Pengguna membuka menu profile untuk melihat data diri yang terdaftar di sistem. Sistem memload data profil dari server dan menampilkannya. Pengguna dapat memilih untuk edit profil jika ingin mengupdate data, atau memilih tombol logout untuk keluar aplikasi. Jika logout, sistem akan menghapus session dan redirect pengguna kembali ke halaman login.
 
 ### BPMN Flow
 
@@ -686,6 +713,9 @@ graph TD
 
 ## UC-A1 🔐 Login Admin
 
+**Penjelasan Proses:**
+Petugas lapangan membuka aplikasi dan memilih mode login sebagai admin/petugas. Sistem menampilkan form login khusus admin. Petugas memasukkan kredensial admin (username dan password yang berbeda dari user biasa). Sistem memvalidasi kredensial, mengecek apakah user tersebut adalah admin, dan jika valid maka menyimpan session admin lalu menampilkan dashboard admin khusus untuk monitoring.
+
 ### BPMN Flow
 
 ```mermaid
@@ -746,6 +776,9 @@ graph TD
 
 ## UC-A2 📊 Dashboard Admin
 
+**Penjelasan Proses:**
+Setelah login sebagai admin, sistem mengecek validitas session admin. Jika valid, sistem memload data monitoring untuk dashboard (jumlah permohonan pending, total pembayaran, dll) dan menampilkan dashboard admin dengan menu navigasi khusus. Petugas dapat melihat ringkasan monitoring dan memilih menu untuk masuk ke modul manajemen permohonan, tagihan, pembayaran, atau objek retribusi.
+
 ### BPMN Flow
 
 ```mermaid
@@ -801,6 +834,9 @@ graph TD
 ---
 
 ## UC-A3 📋 Monitoring Permohonan (Admin)
+
+**Penjelasan Proses:**
+Petugas membuka modul permohonan untuk melihat dan memonitor semua permohonan sewa dari seluruh pengguna. Sistem memvalidasi session admin dan memload semua permohonan dengan status masing-masing. Sistem menampilkan dalam list yang dapat difilter berdasarkan status atau user. Petugas dapat memilih permohonan untuk review detail lengkap (dokumen, data pemohon) dan mengambil aksi (disetujui/ditolak).
 
 ### BPMN Flow
 
@@ -862,6 +898,9 @@ graph TD
 
 ## UC-A4 📊 Monitoring Perjanjian & Tagihan
 
+**Penjelasan Proses:**
+Petugas membuka modul tagihan untuk memonitor semua perjanjian aktif dan tagihan yang masih pending dari seluruh pengguna. Sistem memvalidasi session admin dan memload data perjanjian serta tagihan dari server. Sistem menampilkan dalam list yang dapat difilter berdasarkan status pembayaran atau user. Petugas dapat memilih item untuk melihat detail lengkap perjanjian dan status pembayaran tagihan.
+
 ### BPMN Flow
 
 ```mermaid
@@ -920,6 +959,9 @@ graph TD
 ---
 
 ## UC-A5 💰 Monitoring Pembayaran
+
+**Penjelasan Proses:**
+Petugas membuka modul pembayaran untuk memonitor semua transaksi pembayaran dari seluruh pengguna secara realtime. Sistem memvalidasi session admin dan memload data pembayaran dengan status (pending, sukses, failed). Sistem menampilkan dalam list yang dapat difilter berdasarkan status atau tanggal pembayaran. Petugas dapat memilih pembayaran untuk melihat detail lengkap dan bukti transaksi.
 
 ### BPMN Flow
 
