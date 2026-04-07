@@ -1228,3 +1228,12 @@ graph TD
 **Versi:** 2.0 (Simplified BPMN)  
 **Status:** ✅ Complete
 
+
+---
+
+### Proses Petugas Lapangan Melihat Tarif Sewa
+
+![Diagram BPMN Proses Petugas Lapangan Melihat Tarif Sewa](img/petugas-lapangan-melihat-tarif-sewa.svg)
+
+Deskripsi singkat:
+Petugas lapangan melakukan login, memilih menu tarif sewa, lalu melihat daftar tarif sewa.
