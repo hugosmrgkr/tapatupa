@@ -5,7 +5,7 @@ import 'dart:async';
 
 import 'package:tapatupa/styles/app_styles.dart';
 import 'package:tapatupa/user/admin/admin_home.dart';
-import 'package:tapatupa/user/home.dart';
+import 'package:tapatupa/main_navigation.dart';
 import 'package:tapatupa/user/service/api_service.dart';
 
 // ════════════════════════════════════════════════════════════
@@ -59,28 +59,14 @@ class _LoginPageState extends State<login> {
     if (isLoggedIn == true && accessToken != null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => home()),
+        MaterialPageRoute(builder: (context) => MainNavigation()),
       );
     }
   }
 
-  Future<void> _startSession(Map<String, dynamic> userData, String accessToken,
-      String tokenType, int expiresIn) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('namaLengkap', userData['namalengkap'] ?? '');
-    await prefs.setString('fotoUser', userData['fotouser'] ?? '');
-    await prefs.setInt('id', userData['id'] ?? 0);
-    await prefs.setInt('roleId', userData['roletd'] ?? 0);
-    await prefs.setString('roleName', userData['roleName'] ?? '');
-    await prefs.setInt('idPersonal', userData['idPersonal'] ?? 0);
-    await prefs.setString('accessToken', accessToken);
-    await prefs.setString('tokenType', tokenType);
-    await prefs.setInt('expiresIn', expiresIn);
-    await prefs.setBool('isLoggedIn', true);
-
-    _sessionTimer = Timer(Duration(seconds: expiresIn), () async {
-      await _endSession();
-    });
+  void _saveSessionData(Map<String, dynamic> userData, String accessToken) {
+    // Session data is automatically saved in ApiService.login()
+    // This method is kept for reference only
   }
 
   Future<void> _endSession() async {
@@ -131,7 +117,7 @@ class _LoginPageState extends State<login> {
         _showSnackbar("Berhasil", "Login berhasil", ContentType.success);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => home()),
+          MaterialPageRoute(builder: (context) => MainNavigation()),
         );
       }
     } catch (e) {

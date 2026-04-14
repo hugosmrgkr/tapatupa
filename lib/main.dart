@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tapatupa/screens/loading_screen.dart';
-import 'package:tapatupa/screens/login.dart';
+import 'package:tapatupa/screens/role_select_login.dart';
 import 'package:tapatupa/screens/registrasi.dart'; 
-import 'package:tapatupa/user/RetributionListPage.dart';
-import 'package:tapatupa/screens/onboarding_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'user/home.dart';
+import 'package:tapatupa/main_navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,26 +20,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       routes: {
-        '/loading':     (context) => LoadingScreen(),
-        '/onboarding':  (context) => OnboardingScreen(),
-        '/login':       (context) => login(),
+        '/roleSelect':  (context) => RoleSelectLogin(),
         '/register':    (context) => Register(), 
-        '/home':        (context) => home(),
-        '/retribution': (context) => RetributionListPage(),
+        '/home':        (context) => MainNavigation(),
       },
 
-      home: FutureBuilder<SharedPreferences>(
-        future: Future.delayed(
-          const Duration(seconds: 3),
-          () => SharedPreferences.getInstance(),
-        ),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return LoadingScreen();
-          }
-          return OnboardingScreen();
-        },
-      ),
+      home: RoleSelectLogin(),
     );
   }
 }

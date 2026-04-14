@@ -84,20 +84,7 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
-  // Here's the missing _buildTextData method
-  Widget _buildTextData(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            flex: 3, // Atur flex agar label tidak terlalu lebar
-            child: Text(
-              label,
-              style: GoogleFonts.roboto(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
+  // _buildTextData method removed as it's not used
                   color: Colors.black54),
             ),
           ),

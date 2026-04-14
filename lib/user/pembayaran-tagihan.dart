@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:tapatupa/user/pembayaran.dart';
@@ -26,19 +26,52 @@ class _PembayaranTagihanState extends State<pembayaran_tagihan> {
 
   Future<void> _loadData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final idPersonal = prefs.getInt('idPersonal');
-
-      if (idPersonal == null) {
-        throw Exception('User data not found');
+      // Mock data untuk testing/demo
+      final mockData = [
+        {
+          'idPembayaran': 1,
+          'nomorTransaksi': 'TRF-2024-045',
+          'nilaiPembayaran': 1500000,
+          'tanggalPembayaran': '08 April 2024',
+          'statusPembayaran': 'Terima',
+          'metodeAtau': 'Transfer Bank',
+          'keterangan': 'Pembayaran SWF-2024-001',
+        },
+        {
+          'idPembayaran': 2,
+          'nomorTransaksi': 'TRF-2024-044',
+          'nilaiPembayaran': 850000,
+          'tanggalPembayaran': '05 April 2024',
+          'statusPembayaran': 'Terima',
+          'metodeAtau': 'Transfer Bank',
+          'keterangan': 'Pembayaran SWF-2024-002',
+        },
+        {
+          'idPembayaran': 3,
+          'nomorTransaksi': 'TRF-2024-043',
+          'nilaiPembayaran': 2200000,
+          'tanggalPembayaran': '01 April 2024',
+          'statusPembayaran': 'Terima',
+          'metodeAtau': 'Transfer Bank',
+          'keterangan': 'Pembayaran SWF-2024-003',
+        },
+        {
+          'idPembayaran': 4,
+          'nomorTransaksi': 'TRF-2024-042',
+          'nilaiPembayaran': 1750000,
+          'tanggalPembayaran': '28 Maret 2024',
+          'statusPembayaran': 'Terima',
+          'metodeAtau': 'Transfer Bank',
+          'keterangan': 'Pembayaran SWF-2024-004',
+        },
+      ];
+      
+      if (mounted) {
+        setState(() {
+          _pembayaranData = mockData;
+          _isLoading = false;
+        });
       }
-
-      final response = await ApiService.get('pembayaran-mobile/$idPersonal');
-
-      setState(() {
-        _pembayaranData = response['pembayaranSewa'] ?? [];
-        _isLoading = false;
-      });
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
@@ -91,7 +124,7 @@ class _PembayaranTagihanState extends State<pembayaran_tagihan> {
             context,
             MaterialPageRoute(
               builder: (context) => PembayaranPage(
-                responseBody: jsonEncode(_activePayment),
+                body: jsonEncode(_activePayment),
               ),
             ),
           );
@@ -204,9 +237,6 @@ class _PembayaranTagihanState extends State<pembayaran_tagihan> {
             itemCount: _pembayaranData?.length ?? 0,
             itemBuilder: (context, index) {
               final payment = _pembayaranData![index];
-              final bool isPaymentPaid =
-                  payment['namaStatus'] == 'Sudah Dibayar';
-              if (isPaid != isPaymentPaid) return SizedBox.shrink();
 
               return Card(
                 color: Colors.white,
@@ -214,6 +244,7 @@ class _PembayaranTagihanState extends State<pembayaran_tagihan> {
                 margin: EdgeInsets.only(bottom: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.green.withOpacity(0.2)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.all(16),
@@ -224,47 +255,51 @@ class _PembayaranTagihanState extends State<pembayaran_tagihan> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Flexible(
-                            child: Text(
-                              payment['noInvoice'] ?? '-',
-                              style: GoogleFonts.roboto(
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  payment['nomorTransaksi'] ?? '-',
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  payment['keterangan'] ?? '-',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: isPaid ? Colors.green : Colors.orange,
+                              color: Colors.green.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.green.withOpacity(0.3),
+                              ),
                             ),
                             child: Text(
-                              payment['namaStatus'] ?? '-',
-                              style: GoogleFonts.roboto(
-                                color: Colors.white,
-                                fontSize: 12,
+                              payment['statusPembayaran'] ?? '-',
+                              style: GoogleFonts.poppins(
+                                color: Colors.green,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Retribusi    : ${payment['objekRetribusi']}',
-                        style: GoogleFonts.roboto(),
-                      ),
-                      Text(
-                        'Nama         : ${payment['namaWajibRetribusi']}',
-                        style: GoogleFonts.roboto(),
-                      ),
-                      if (payment['alamatLengkap'] != null)
-                        Text(
-                          'Alamat       : ${payment['alamatLengkap']}',
-                          style: GoogleFonts.roboto(),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      SizedBox(height: 12),
+                      SizedBox(height: 14),
+                      Divider(color: Colors.grey[200], height: 1),
+                      SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -272,44 +307,78 @@ class _PembayaranTagihanState extends State<pembayaran_tagihan> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Total Bayar:',
-                                style: GoogleFonts.roboto(
-                                  color: Colors.grey[600],
+                                'Metode',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.grey[500],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
+                              SizedBox(height: 4),
                               Text(
-                                _formatRupiah(payment['totalBayar']),
-                                style: GoogleFonts.roboto(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[700],
+                                payment['metodeAtau'] ?? '-',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
                                 ),
                               ),
                             ],
                           ),
-                          if (payment['tanggalPembayaran'] != null)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'Tanggal Bayar:',
-                                  style: GoogleFonts.roboto(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Tanggal',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.grey[500],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                Text(
-                                  payment['tanggalPembayaran']
-                                      .toString()
-                                      .split(' ')[0],
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                payment['tanggalPembayaran'] ?? '-',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
+                          ),
                         ],
+                      ),
+                      SizedBox(height: 14),
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.blue.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Jumlah Pembayaran',
+                              style: GoogleFonts.poppins(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              _formatRupiah(payment['nilaiPembayaran']),
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.blue[700],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -327,62 +396,78 @@ class _PembayaranTagihanState extends State<pembayaran_tagihan> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Column(
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                child: Container(
-                  height:
-                      screenHeight / 16 + MediaQuery.of(context).padding.top,
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Colors.black.withOpacity(0.5),
-                      BlendMode.darken,
+      backgroundColor: Colors.white,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverAppBar(
+            expandedHeight: screenHeight * 0.15,
+            floating: false,
+            pinned: true,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.green[600]!, Colors.green[800]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                    child: Image.asset(
-                      'assets/gorgabatak.jpg',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: screenHeight /
-                    20, // Menyesuaikan posisi ke tengah lebih baik
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Text(
-                    'Riwayat Pembayaran',
-                    style: GoogleFonts.roboto(
-                      fontSize: 25,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        Colors.green[900]!.withOpacity(0.2),
+                        BlendMode.darken,
+                      ),
+                      child: Image.asset(
+                        'assets/gorgabatak.jpg',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Icon(Icons.payment, color: Colors.white, size: 28),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'Riwayat Pembayaran',
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              // Padding(
-              //   padding: const EdgeInsets.all(16.0),
-              //   child: Column(
-              //     children: [
-              //       SizedBox(height: 10),
-              //     ],
-              //   ),
-              // ),
-            ],
-          ),
-          Expanded(
-            child: _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                    ? Center(child: Text(_errorMessage!))
-                    : _buildPaymentList(true), // true for paid payments only
+            ),
           ),
         ],
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+                ? Center(child: Text(_errorMessage!))
+                : _buildPaymentList(true),
       ),
     );
   }

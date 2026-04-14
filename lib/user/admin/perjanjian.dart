@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tapatupa/user/detail-perjanjian.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tapatupa/user/service/api_service.dart';
+import 'package:tapatupa/user/admin/detail_perjanjian_admin.dart';
 
 class perjanjian extends StatefulWidget {
   @override
@@ -178,8 +178,8 @@ class _HomePageState extends State<HomePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => detailPerjanjian(
-                                  id: data['idPerjanjianSewa'],
+                                builder: (context) => DetailPerjanjianAdmin(
+                                  perjanjian: data ?? {},
                                 ),
                               ),
                             );

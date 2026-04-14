@@ -1,576 +1,628 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:tapatupa/user/home.dart';
-import 'service/api_service.dart';
 
 class PembayaranPage extends StatefulWidget {
-  final String responseBody;
-
-  const PembayaranPage({required this.responseBody, Key? key})
-      : super(key: key);
-
   @override
-  _PembayaranPageState createState() => _PembayaranPageState();
+  State<PembayaranPage> createState() => _PembayaranPageState();
 }
 
-class _PembayaranPageState extends State<PembayaranPage> {
-  late DateTime _waktuSekarang;
-  late DateTime _waktuJatuhTempo;
-  late String _formattedWaktuJatuhTempo;
-  late String _formattedTotalBayar;
-  late String _noVirtualAccount;
-  late Timer _timer;
-  late int _totalBayar;
-  late String _formattedSisaWaktu;
-  late String _nomorTagihan;
-  late DateTime _tanggalJatuhTempo;
-  late String _formattedTanggalJatuhTempo;
-  late int _jumlahTagihan;
-  bool _isLoading = true;
-  String? _errorMessage;
+class _PembayaranPageState extends State<PembayaranPage>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  String? _selectedBank;
+  double _selectedNominal = 0;
 
   @override
   void initState() {
     super.initState();
-    _initializeData();
-    _startPaymentStatusCheck();
-  }
-
-  // void _initializeData() {
-  //   try {
-  //     final data = jsonDecode(widget.responseBody);
-
-  //     // Initialize payment data from response
-  //     final virtualAccountData = data['virtualAccountData'] ?? {};
-  //     final billDetails =
-  //         ((virtualAccountData['billDetails'] as List?)?.firstOrNull) ?? {};
-  //     final billAmount = billDetails['billAmount'] ?? {};
-
-  //     setState(() {
-  //       _totalBayar =
-  //           _parseInt(billAmount['value']?.replaceAll('.00', '') ?? '0');
-  //       _noVirtualAccount =
-  //           virtualAccountData['noVirtualAccount']?.toString() ?? 'N/A';
-  //       _nomorTagihan = virtualAccountData['trxId']?.toString() ?? 'N/A';
-  //       // Initialize other state variables...
-
-  //       _waktuSekarang = DateTime.now();
-  //       _waktuJatuhTempo = _waktuSekarang.add(const Duration(days: 7));
-  //       _formattedWaktuJatuhTempo =
-  //           DateFormat('dd MMM yyyy, HH:mm').format(_waktuJatuhTempo);
-  //       _formattedSisaWaktu =
-  //           _formatDuration(_waktuJatuhTempo.difference(_waktuSekarang));
-  //       _totalBayar =
-  //           _parseInt(billAmount['value']?.replaceAll('.00', '') ?? '0');
-  //       _noVirtualAccount =
-  //           virtualAccountData['noVirtualAccount']?.toString() ?? 'N/A';
-  //       _nomorTagihan = virtualAccountData['trxId']?.toString() ?? 'N/A';
-  //       _jumlahTagihan =
-  //           _totalBayar; // Using the same value as total bayar since it's the same in the response
-
-  //       _tanggalJatuhTempo = _parseDate(virtualAccountData['expiredDate']) ??
-  //           _waktuSekarang.add(const Duration(days: 1));
-  //       _formattedTanggalJatuhTempo =
-  //           DateFormat('dd MMM yyyy').format(_tanggalJatuhTempo);
-  //       _formattedTotalBayar = NumberFormat.currency(
-  //         locale: 'id',
-  //         symbol: 'Rp ',
-  //         decimalDigits: 0,
-  //       ).format(_totalBayar);
-  //       _isLoading = false;
-  //     });
-
-  //     _startCountdown();
-  //   } catch (e) {
-  //     setState(() {
-  //       _errorMessage = 'Failed to process payment data: ${e.toString()}';
-  //       _isLoading = false;
-  //     });
-  //   }
-  // }
-
-  void _initializeData() {
-    try {
-      final data = jsonDecode(widget.responseBody);
-      print('Response data: $data');
-
-      // Get the first tagihan detail since it contains VA number
-      final tagihanDetail = (data['tagihanDetail'] as List?)?.firstOrNull ?? {};
-      print('Tagihan Detail: $tagihanDetail'); // Debug log
-
-      setState(() {
-        // Get VA number from tagihanDetail
-        _noVirtualAccount =
-            tagihanDetail['noVirtualAccount']?.toString() ?? 'N/A';
-        _nomorTagihan = tagihanDetail['trxId']?.toString() ?? 'N/A';
-        _totalBayar = tagihanDetail['totalTagihan'] as int? ?? 0;
-        _jumlahTagihan = tagihanDetail['jumlahTagihan'] as int? ?? 0;
-
-        _waktuSekarang = DateTime.now();
-        _waktuJatuhTempo = _waktuSekarang.add(const Duration(hours: 24));
-
-        _tanggalJatuhTempo = _parseDate(tagihanDetail['tanggalJatuhTempo']) ??
-            _waktuSekarang.add(const Duration(days: 1));
-
-        // Format dates and currency
-        _formattedWaktuJatuhTempo =
-            DateFormat('dd MMM yyyy, HH:mm').format(_waktuJatuhTempo);
-        _formattedTanggalJatuhTempo =
-            DateFormat('dd MMM yyyy').format(_tanggalJatuhTempo);
-        _formattedTotalBayar = NumberFormat.currency(
-          locale: 'id',
-          symbol: 'Rp ',
-          decimalDigits: 0,
-        ).format(_totalBayar);
-
-        _formattedSisaWaktu =
-            _formatDuration(_waktuJatuhTempo.difference(_waktuSekarang));
-        _isLoading = false;
-      });
-
-      print('Initialized VA number: $_noVirtualAccount'); // Debug log
-      _startCountdown();
-    } catch (e) {
-      print('Error in _initializeData: $e');
-      setState(() {
-        _errorMessage = 'Gagal memproses data pembayaran: ${e.toString()}';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _checkPaymentStatus() async {
-    try {
-      final response = await ApiService.get('payment-status/$_nomorTagihan');
-
-      if (response['status'] == 'PAID') {
-        _timer.cancel(); // Stop polling
-        // Handle successful payment
-        // You might want to show a success dialog or navigate to a success page
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => home()),
-        );
-      }
-    } catch (e) {
-      print('Error checking payment status: $e');
-    }
-  }
-
-  void _startPaymentStatusCheck() {
-    // Check payment status every 30 seconds
-    Timer.periodic(Duration(seconds: 30), (timer) {
-      _checkPaymentStatus();
-    });
-  }
-
-  // Method to cancel payment
-  Future<void> _cancelPayment() async {
-    try {
-      final response = await ApiService.post(
-        'cancel-payment',
-        {'trxId': _nomorTagihan},
-      );
-
-      if (response['status'] == 'SUCCESS') {
-        Navigator.pop(context);
-      } else {
-        throw Exception(response['message']);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to cancel payment: ${e.toString()}')),
-      );
-    }
-  }
-
-  int _parseInt(dynamic value) {
-    if (value is int) return value;
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
-  }
-
-  DateTime? _parseDate(dynamic dateString) {
-    try {
-      if (dateString == null) return null;
-      return DateTime.parse(dateString.toString());
-    } catch (e) {
-      debugPrint('Date Parse Error: $e');
-      return null;
-    }
-  }
-
-  void _startCountdown() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) return;
-
-      setState(() {
-        final remainingTime = _waktuJatuhTempo.difference(DateTime.now());
-        _formattedSisaWaktu = remainingTime.isNegative
-            ? 'Waktu telah habis'
-            : _formatDuration(remainingTime);
-      });
-    });
-  }
-
-  String _formatDuration(Duration duration) {
-    final days = duration.inDays.toString().padLeft(2, '0');
-    final hours = (duration.inHours % 24).toString().padLeft(2, '0');
-    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
-    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    return '$hours jam $minutes menit $seconds detik';
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return _buildLoadingScreen();
-    }
+    final screenHeight = MediaQuery.of(context).size.height;
+    final currencyFormat =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp');
 
-    if (_errorMessage != null) {
-      return _buildErrorScreen();
-    }
+    // Dummy data - Riwayat Pembayaran
+    final List<Map<String, dynamic>> pembayaranList = [
+      {
+        'nomor': 'TRF-2024-045',
+        'metode': 'Transfer Bank',
+        'nominal': 1500000,
+        'tanggal': '15 Jan 2024',
+        'bank': 'BNI',
+        'status': 'TERIMA',
+        'invoiceNo': 'SWF-2024-001',
+      },
+      {
+        'nomor': 'TRF-2024-044',
+        'metode': 'Transfer Bank',
+        'nominal': 850000,
+        'tanggal': '14 Jan 2024',
+        'bank': 'Mandiri',
+        'status': 'TERIMA',
+        'invoiceNo': 'SWF-2024-003',
+      },
+      {
+        'nomor': 'TRF-2024-043',
+        'metode': 'Transfer Bank',
+        'nominal': 2200000,
+        'tanggal': '13 Jan 2024',
+        'bank': 'BCA',
+        'status': 'TERIMA',
+        'invoiceNo': 'SWF-2024-005',
+      },
+      {
+        'nomor': 'TRF-2024-042',
+        'metode': 'Transfer Bank',
+        'nominal': 1750000,
+        'tanggal': '12 Jan 2024',
+        'bank': 'BNI',
+        'status': 'TERIMA',
+        'invoiceNo': 'SWF-2024-007',
+      },
+    ];
+
+    // Dummy data - Tagihan Belum Bayar untuk tab Bayar
+    final List<Map<String, dynamic>> tagihanBelumBayar = [
+      {
+        'nomor': 'SWF-2024-002',
+        'bulan': 'Februari 2024',
+        'nominal': 1500000,
+        'perjanjian': 'Tempat Usaha Retail',
+        'jatuhTempo': '15 Feb 2024',
+      },
+      {
+        'nomor': 'SWF-2024-004',
+        'bulan': 'Januari 2024',
+        'nominal': 2200000,
+        'perjanjian': 'Kantor Cabang',
+        'jatuhTempo': '15 Jan 2024',
+      },
+    ];
 
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              _buildPaymentCard(),
-              const SizedBox(height: 16),
-              _buildVirtualAccountCard(),
-              const SizedBox(height: 16),
-              _buildInstructionsCard(),
-              const SizedBox(height: 16),
-              _buildDetailsCard(),
-              const SizedBox(height: 16),
-              _buildConfirmButton(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingScreen() {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-
-  Widget _buildErrorScreen() {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Error',
-          style: GoogleFonts.roboto(color: Colors.white),
-        ),
-        backgroundColor: const Color.fromARGB(255, 179, 13, 1),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 50, color: Colors.red),
-              const SizedBox(height: 20),
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.roboto(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Kembali',
-                  style: GoogleFonts.roboto(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: Text(
-        'Pembayaran',
-        style: GoogleFonts.roboto(color: Colors.white),
-      ),
-      backgroundColor: const Color.fromARGB(255, 179, 13, 1),
-      elevation: 0,
-    );
-  }
-
-  Widget _buildPaymentCard() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildPaymentRow('Total Pembayaran', _formattedTotalBayar),
-            const Divider(height: 24),
-            _buildPaymentRow('Bayar Dalam', _formattedSisaWaktu,
-                isUrgent: true),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentRow(String label, String value, {bool isUrgent = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.roboto(fontSize: 15),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.roboto(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: isUrgent ? Colors.red : Colors.black,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVirtualAccountCard() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Image.asset('assets/img.png', width: 40, height: 40),
-                const SizedBox(width: 8),
-                Text(
-                  'TAPATUPA',
-                  style: GoogleFonts.roboto(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            floating: false,
+            pinned: true,
+            expandedHeight: screenHeight * 0.15,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF388E3C), Color(0xFF1B5E20)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No. Virtual Account',
-              style: GoogleFonts.roboto(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _noVirtualAccount,
-                  style: GoogleFonts.roboto(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 250, 75, 40),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: _copyVirtualAccount,
-                  child: Text(
-                    'Salin',
-                    style: GoogleFonts.roboto(
-                      fontSize: 16,
-                      color: const Color.fromARGB(255, 0, 83, 151),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.4)),
+                            ),
+                            child: Icon(
+                                Icons.account_balance_wallet_outlined,
+                                color: Colors.white,
+                                size: 28),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            'Pembayaran',
+                            style: GoogleFonts.poppins(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white.withOpacity(0.7),
+              labelStyle:
+                  GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700),
+              unselectedLabelStyle:
+                  GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
+              splashFactory: NoSplash.splashFactory,
+              tabs: const [
+                Tab(text: 'Riwayat'),
+                Tab(text: 'Bayar Tagihan'),
+              ],
+            ),
+          ),
+          SliverFillRemaining(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Tab 1: Riwayat Pembayaran
+                ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  itemCount: pembayaranList.length,
+                  itemBuilder: (context, index) {
+                    final item = pembayaranList[index];
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        padding: EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.grey[200]!,
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.06),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item['nomor'],
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        item['metode'],
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    item['status'],
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Divider(
+                              color: Colors.grey[200],
+                              height: 1,
+                            ),
+                            SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Bank',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        color: Colors.grey[500],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(height: 3),
+                                    Text(
+                                      item['bank'],
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'Nominal',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        color: Colors.grey[500],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(height: 3),
+                                    Text(
+                                      currencyFormat
+                                          .format(item['nominal']),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF388E3C),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Tanggal: ${item['tanggal']}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Tab 2: Bayar Tagihan (VA Layout)
+                SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Pilih Tagihan
+                      Text(
+                        'Pilih Tagihan',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      ...tagihanBelumBayar.map((tagihan) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedNominal =
+                                  (tagihan['nominal'] as num).toDouble();
+                            });
+                          },
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 12),
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _selectedNominal ==
+                                      (tagihan['nominal'] as num)
+                                          .toDouble()
+                                  ? Color(0xFF388E3C).withOpacity(0.1)
+                                  : Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _selectedNominal ==
+                                        (tagihan['nominal'] as num)
+                                            .toDouble()
+                                    ? Color(0xFF388E3C)
+                                    : Colors.grey[300]!,
+                                width: _selectedNominal ==
+                                        (tagihan['nominal'] as num)
+                                            .toDouble()
+                                    ? 2
+                                    : 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        tagihan['nomor'],
+                                        style:
+                                            GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight:
+                                              FontWeight.w700,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        '${tagihan['perjanjian']} - ${tagihan['bulan']}',
+                                        style:
+                                            GoogleFonts.poppins(
+                                          fontSize: 10,
+                                          color:
+                                              Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  currencyFormat.format(
+                                      tagihan['nominal']),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF388E3C),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      SizedBox(height: 24),
+
+                      // Pilih Bank VA
+                      Text(
+                        'Pilih Bank',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      ...[
+                        {'name': 'BNI', 'code': 'bni', 'va': '8272-1234-567-890'},
+                        {'name': 'BCA', 'code': 'bca', 'va': '1234-567-8901-234'},
+                        {
+                          'name': 'Mandiri',
+                          'code': 'mandiri',
+                          'va': '1234-567-8901'
+                        },
+                      ].map((bank) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedBank = bank['code'];
+                            });
+                          },
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 10),
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _selectedBank == bank['code']
+                                  ? Color(0xFF388E3C).withOpacity(0.1)
+                                  : Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _selectedBank == bank['code']
+                                    ? Color(0xFF388E3C)
+                                    : Colors.grey[300]!,
+                                width:
+                                    _selectedBank == bank['code'] ? 2 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      bank['name']!,
+                                      style:
+                                          GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight:
+                                            FontWeight.w700,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'VA: ${bank['va']}',
+                                      style:
+                                          GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        color:
+                                            Colors.grey[600],
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_selectedBank == bank['code'])
+                                  Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Color(0xFF388E3C),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Icon(Icons.check,
+                                          color: Colors.white,
+                                          size: 14),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      SizedBox(height: 24),
+
+                      // Payment Summary
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.green[200]!,
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ringkasan Pembayaran',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Nominal:',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  _selectedNominal > 0
+                                      ? currencyFormat
+                                          .format(_selectedNominal)
+                                      : '-',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF388E3C),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Bank:',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  _selectedBank?.toUpperCase() ?? '-',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 24),
+
+                      // Submit Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _selectedNominal > 0 &&
+                                  _selectedBank != null
+                              ? () {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Pembayaran via ${_selectedBank?.toUpperCase()} sebesar ${currencyFormat.format(_selectedNominal)} diproses...',
+                                        style:
+                                            GoogleFonts.poppins(),
+                                      ),
+                                      backgroundColor:
+                                          Colors.green,
+                                    ),
+                                  );
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF388E3C),
+                            disabledBackgroundColor:
+                                Colors.grey[400],
+                            padding: EdgeInsets.symmetric(
+                                vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: Text(
+                            'Proses Pembayaran',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                    ],
                   ),
                 ),
               ],
-            ),
-            const Divider(height: 24),
-            Text(
-              'Silakan menunggu proses verifikasi oleh petugas.',
-              style: GoogleFonts.roboto(
-                fontSize: 12,
-                color: Colors.green,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Penting: Transfer ke nomor Virtual Account di atas.',
-              style: GoogleFonts.roboto(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _copyVirtualAccount() {
-    Clipboard.setData(ClipboardData(text: _noVirtualAccount));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Nomor VA disalin!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
-  Widget _buildInstructionsCard() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Petunjuk Transfer Virtual Account',
-              style: GoogleFonts.roboto(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildInstructionStep('1. Pilih *Transfer* > *Virtual Account*.'),
-            _buildInstructionStep(
-                '2. Pilih *Rekening Debit* > Masukkan nomor Virtual Account **$_noVirtualAccount**.'),
-            _buildInstructionStep(
-                '3. Tagihan yang harus dibayar akan muncul pada layar konfirmasi.'),
-            _buildInstructionStep(
-                '4. Periksa informasi yang tertera di layar. Pastikan nama penerima adalah **TAPATUPA**.'),
-            const SizedBox(height: 16),
-            Text(
-              'Catatan: Transfer hanya dapat dilakukan via Bank SUMUT.',
-              style: GoogleFonts.roboto(
-                fontSize: 13,
-                color: Colors.green,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInstructionStep(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        text,
-        style: GoogleFonts.roboto(fontSize: 13),
-      ),
-    );
-  }
-
-  Widget _buildDetailsCard() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Detail Pembayaran',
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildDetailRow('No. Tagihan', _nomorTagihan),
-            _buildDetailRow(
-                'Jumlah Tagihan',
-                NumberFormat.currency(
-                        locale: 'id', symbol: 'Rp ', decimalDigits: 0)
-                    .format(_jumlahTagihan)),
-            // _buildDetailRow('Jatuh Tempo', _formattedTanggalJatuhTempo),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: GoogleFonts.roboto(fontSize: 14)),
-          Text(
-            value,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildConfirmButton() {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => home(),
-          ),
-        );
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.orange,
-        minimumSize: const Size(double.infinity, 50),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      child: Text(
-        'Oke',
-        style: GoogleFonts.roboto(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }

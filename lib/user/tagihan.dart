@@ -1,307 +1,572 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:tapatupa/user/detail-sewa.dart';
-import 'RetributionListPage.dart'; // Import your RetributionListPage here
-import 'profile.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class tagihans extends StatefulWidget {
+class TagihanPage extends StatefulWidget {
   @override
-  _TagihanState createState() => _TagihanState();
+  State<TagihanPage> createState() => _TagihanPageState();
 }
 
-class _TagihanState extends State<tagihans> {
-  int _currentIndex = 0;
+class _TagihanPageState extends State<TagihanPage> {
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
 
-  final List<Widget> _pages = [
-    HomePage(),
-    HomePage(),
-    tagihans(),
-    RetributionListPage(),
-    profile(),
-  ];
+    // Dummy data - List of invoices
+    final List<Map<String, dynamic>> tagihanList = [
+      {
+        'nomor': '973/217/SP/',
+        'tanggal': '5-2.5.2/II/2021',
+        'objekRetribusi': '120206010 - Sewa Tanah',
+        'pembayaran': 'Rp 192.290',
+        'status': 'Perjanjian Aktif',
+        'statusColor': Colors.green,
+        'isPaid': false,
+      },
+      {
+        'nomor': '973/217/SP/',
+        'tanggal': '5-2.5.2/II/2021',
+        'objekRetribusi': '120206010 - Sewa Tanah',
+        'pembayaran': 'Rp 192.289',
+        'status': 'Perjanjian Aktif',
+        'statusColor': Colors.green,
+        'isPaid': false,
+      },
+      {
+        'nomor': '974/218/SP/',
+        'tanggal': '6-3.5.2/III/2021',
+        'objekRetribusi': '120206015 - Sewa Tempat Usaha',
+        'pembayaran': 'Rp 250.000',
+        'status': 'Perjanjian Aktif',
+        'statusColor': Colors.green,
+        'isPaid': true,
+      },
+      {
+        'nomor': '975/219/SP/',
+        'tanggal': '7-4.5.2/IV/2021',
+        'objekRetribusi': '120206020 - Gedung Perkantoran',
+        'pembayaran': 'Rp 500.000',
+        'status': 'Perjanjian Aktif',
+        'statusColor': Colors.green,
+        'isPaid': false,
+      },
+      {
+        'nomor': '976/220/SP/',
+        'tanggal': '8-5.5.2/V/2021',
+        'objekRetribusi': '120206025 - Toko Komersial',
+        'pembayaran': 'Rp 350.000',
+        'status': 'Perjanjian Aktif',
+        'statusColor': Colors.green,
+        'isPaid': true,
+      },
+    ];
+
+    return Scaffold(
+      backgroundColor: Color(0xFFF5F5F5),
+      body: CustomScrollView(
+        slivers: [
+          // Header dengan gradient
+          SliverAppBar(
+            expandedHeight: screenHeight * 0.14,
+            floating: false,
+            pinned: true,
+            backgroundColor: Color(0xFF1976D2),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tagihan Sewa',
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Daftar tagihan sewa objek retribusi',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+
+          // Invoice List
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _TagihanCard(
+                  tagihan: tagihanList[index],
+                ),
+                childCount: tagihanList.length,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Invoice Card Widget
+class _TagihanCard extends StatelessWidget {
+  final Map<String, dynamic> tagihan;
+
+  const _TagihanCard({required this.tagihan});
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        body: _pages[_currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.help), label: 'Permohonan'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.account_balance_wallet), label: 'Tagihan'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.history), label: 'Pembayaran'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => _TagihanDetailModal(tagihan: tagihan),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.grey.shade100,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.08),
+              blurRadius: 10,
+              offset: Offset(0, 2),
+            ),
           ],
-          currentIndex: _currentIndex,
-          selectedItemColor: Colors.red,
-          unselectedItemColor: Colors.grey,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
+        ),
+        padding: EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Row - Invoice number + Status
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'No. ${tagihan['nomor']}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      tagihan['tanggal'],
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: tagihan['statusColor'].withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    tagihan['status'],
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: tagihan['statusColor'],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+
+            // Divider
+            Container(
+              height: 1,
+              color: Colors.grey.shade100,
+            ),
+            SizedBox(height: 12),
+
+            // Object Info
+            Text(
+              'Objek Retribusi:',
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              tagihan['objekRetribusi'],
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800],
+              ),
+            ),
+            SizedBox(height: 12),
+
+            // Payment Amount
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Color(0xFF1976D2).withOpacity(0.08),
+                border: Border.all(
+                  color: Color(0xFF1976D2).withOpacity(0.2),
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Pembayaran:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  Text(
+                    tagihan['pembayaran'],
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1976D2),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Payment button for unpaid invoices
+            if (!tagihan['isPaid']) ...[
+              SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Navigasi ke pembayaran...',
+                          style: GoogleFonts.poppins(),
+                        ),
+                        backgroundColor: Color(0xFF1976D2),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF1976D2),
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'Bayar Sekarang',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
+/// Detail Modal for Invoice
+class _TagihanDetailModal extends StatelessWidget {
+  final Map<String, dynamic> tagihan;
 
-class _HomePageState extends State<HomePage> {
-  List<dynamic>? _permohonanData;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadIdPersonal();
-  }
-
-  // Load idPersonal from SharedPreferences
-  Future<void> _loadIdPersonal() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? idPersonal =
-        prefs.getInt('idPersonal'); // Assuming you stored it as int
-
-    if (idPersonal != null) {
-      // Convert idPersonal to String before passing to _fetchPermohonanData
-      _fetchPermohonanData(idPersonal.toString());
-    } else {
-      print('No idPersonal found in SharedPreferences');
-    }
-  }
-
-  // Fetch permohonan data based on idPersonal
-  Future<void> _fetchPermohonanData(String idPersonal) async {
-    try {
-      final response = await http.get(Uri.parse(
-          'https://tapatupa.taputkab.go.id/api/tagihan-mobile/$idPersonal'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (mounted) {
-          // Check if the widget is still in the widget tree
-          setState(() {
-            _permohonanData = data['tagihanSewa'];
-          });
-        }
-      } else {
-        print('Failed to fetch permohonan data: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching permohonan data: $e');
-    }
-  }
+  const _TagihanDetailModal({required this.tagihan});
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-// Format nilai menjadi Rupiah
-    String formatRupiah(num? value) {
-      if (value == null) return 'Loading...';
-      final formatter =
-          NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
-      return formatter.format(value);
-    }
-
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          child: Column(
-            children: [
-              // Bagian atas dengan gambar
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30),
-                    ),
-                    child: Container(
-                      height: screenHeight / 13 +
-                          MediaQuery.of(context).padding.top,
-                      width: double.infinity,
-                      child: ColorFiltered(
-                        colorFilter: ColorFilter.mode(
-                          Colors.black.withOpacity(0.5), // Menambahkan opacity
-                          BlendMode.darken,
-                        ),
-                        child: Image.asset(
-                          'assets/bg_layar.png', // Ganti dengan path gambar Anda
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + 19),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 6.0),
-                            child: Text(
-                              'Tagihan Sewa',
-                              style: TextStyle(
-                                  fontSize: 28,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Center(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Content
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(20),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Transform.translate(
-                      offset: Offset(0, -90),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Column(
+                    // Title
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: 30),
-                            SizedBox(height: 10),
-                            GestureDetector(
-                              onTap: () {
-                                if (_permohonanData != null &&
-                                    _permohonanData!.isNotEmpty) {
-                                  final int id = _permohonanData![0][
-                                      'idPerjanjianSewa']; // Pastikan key 'id' sesuai dengan API
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          detailPerjanjianSewa(id: id),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: Colors.green[50],
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.8),
-                                      spreadRadius: 2,
-                                      blurRadius: 5,
-                                      offset: Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${_permohonanData?[0]['nomorSuratPerjanjian'] ?? 'Loading...'}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Divider(
-                                      color: Colors.black,
-                                      thickness: 1,
-                                    ),
-                                    SizedBox(height: 10),
-                                    Row(
-                                      children: [
-                                        Column(
-                                          children: [
-                                            Container(
-                                              width: 70,
-                                              height: 100,
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue
-                                                    .withOpacity(0.2),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: Icon(
-                                                Icons.credit_card,
-                                                size: 32,
-                                                color: Colors.blue,
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                        SizedBox(width: 20),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Objek Retribusi: \n${_permohonanData?[0]['kodeObjekRetribusi'] ?? 'Loading...'} - ${_permohonanData?[0]['objekRetribusi'] ?? 'Loading...'}',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text(
-                                                'Pembayaran: \n${formatRupiah(_permohonanData?[0]['jumlahPembayaran'] as num?)}',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text(
-                                                'Status: \n${_permohonanData?[0]['namaStatus'] ?? 'Loading...'}',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                            Text(
+                              'Detail Tagihan',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'No. ${tagihan['nomor']}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey[500],
                               ),
                             ),
                           ],
                         ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Icon(
+                            Icons.close,
+                            size: 24,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 24),
+
+                    // Invoice Info Box
+                    Container(
+                      padding: EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF1976D2).withOpacity(0.05),
+                        border: Border.all(
+                          color: Color(0xFF1976D2).withOpacity(0.15),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _DetailRow('Nomor Tagihan:', tagihan['nomor']),
+                          SizedBox(height: 10),
+                          _DetailRow('Tanggal:', tagihan['tanggal']),
+                          SizedBox(height: 10),
+                          _DetailRow('Status:', tagihan['status']),
+                        ],
                       ),
                     ),
+                    SizedBox(height: 20),
+
+                    // Object Info
+                    Text(
+                      'Objek Retribusi',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      tagihan['objekRetribusi'],
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
+                        height: 1.6,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+
+                    // Payment Amount
+                    Text(
+                      'Jumlah Pembayaran',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFF1976D2),
+                            Color(0xFF0D47A1),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        tagihan['pembayaran'],
+                        style: GoogleFonts.poppins(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+
+                    // Action buttons
+                    if (!tagihan['isPaid'])
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Navigasi ke halaman pembayaran...',
+                                  style: GoogleFonts.poppins(),
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          },
+                          icon: Icon(Icons.payment),
+                          label: Text(
+                            'Lanjutkan Pembayaran',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF1976D2),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '✓ Sudah Dibayar',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-              )
-            ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Helper widget for detail rows
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DetailRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[600],
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[800],
           ),
         ),
       ],
     );
   }
 }
+

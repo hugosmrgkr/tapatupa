@@ -1,300 +1,123 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tapatupa/user/buat-permohonan-baru.dart';
-import 'package:tapatupa/user/tagihan.dart';
-import 'RetributionListPage.dart';
-import 'detail_permohonan.dart';
-import 'profile.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'service/api_service.dart';
 
-class permohonan extends StatefulWidget {
+class PermohonanPage extends StatefulWidget {
   @override
-  _PermohonanState createState() => _PermohonanState();
+  State<PermohonanPage> createState() => _PermohonanPageState();
 }
 
-class _PermohonanState extends State<permohonan> {
-  int _currentIndex = 1;
-
-  final List<Widget> _pages = [
-    HomePage(),
-    HomePage(),
-    tagihans(),
-    RetributionListPage(),
-    profile(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.red.withOpacity(0.7),
-        statusBarIconBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        body: _pages[_currentIndex],
-      ),
-    );
-  }
-}
-
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _PermohonanPageState extends State<PermohonanPage> with TickerProviderStateMixin {
   late TabController _tabController;
-  List<dynamic>? _permohonanData;
-  String? idPersonal;
+  final _formKey = GlobalKey<FormState>();
+  String? _selectedObjek, _selectedLokasi;
+  Map<String, bool> _uploadedDocs = {'KTP': false, 'Domisili': false};
 
   @override
   void initState() {
     super.initState();
-    _loadIdPersonal(); // Load idPersonal first
     _tabController = TabController(length: 2, vsync: this);
   }
 
-  // Load idPersonal from SharedPreferences
-  Future<void> _loadIdPersonal() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-      final idPersonal = prefs.getInt('idPersonal');
-
-      if (!isLoggedIn || idPersonal == null) {
-        Navigator.pushReplacementNamed(context, '/login');
-        return;
-      }
-
-      await _fetchPermohonanData(idPersonal.toString());
-    } catch (e) {
-      print('Error loading data: $e');
-      Navigator.pushReplacementNamed(context, '/login');
-    }
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
-  // Fetch permohonan data based on idPersonal
-  Future<void> _fetchPermohonanData(String idPersonal) async {
-    try {
-      final response = await ApiService.get('permohonan-mobile/$idPersonal');
-
-      if (response['status'] == 200) {
-        setState(() {
-          _permohonanData = response['permohonanSewa'];
-        });
-      }
-    } catch (e) {
-      print('Error fetching permohonan data: $e');
-      if (e.toString().contains('Unauthorized')) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    }
+  void _resetForm() {
+    _formKey.currentState?.reset();
+    setState(() {
+      _selectedObjek = null;
+      _selectedLokasi = null;
+      _uploadedDocs = {'KTP': false, 'Domisili': false};
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            // Header dengan gambar dan judul
-            Stack(
-              children: [
-                ClipRRect(
-                  child: Container(
-                    height:
-                        screenHeight / 16 + MediaQuery.of(context).padding.top,
-                    width: double.infinity,
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        Colors.black.withOpacity(0.5),
-                        BlendMode.darken,
-                      ),
-                      child: Image.asset(
-                        'assets/gorgabatak.jpg',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            floating: false,
+            pinned: true,
+            expandedHeight: MediaQuery.of(context).size.height * 0.14,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFFDC3545), Color(0xFF8B0000)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-                Positioned(
-                  top: screenHeight / 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Text(
-                      'Permohonan',
-                      style: GoogleFonts.roboto(
-                        fontSize: 25,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.description_outlined, color: Colors.white.withOpacity(0.9), size: 32),
+                      SizedBox(height: 8),
+                      Text('PERMOHONAN SEWA', style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white.withOpacity(0.7),
+              labelStyle: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w700),
+              tabs: const [Tab(text: 'Riwayat'), Tab(text: 'Buat Permohonan')],
+            ),
+          ),
+          SliverFillRemaining(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                ListView(padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20), children: [Text('Riwayat Permohonan', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700))]),
+                SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Data Permohonan', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700)),
+                        SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedObjek,
+                          items: ['Tempat Usaha', 'Toko', 'Kantor'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                          onChanged: (value) => setState(() => _selectedObjek = value),
+                          decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), hintText: 'Pilih objek'),
+                          validator: (value) => value == null ? 'Pilih objek' : null,
+                        ),
+                        SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedLokasi,
+                          items: ['Lokasi A', 'Lokasi B', 'Lokasi C'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                          onChanged: (value) => setState(() => _selectedLokasi = value),
+                          decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), hintText: 'Pilih lokasi'),
+                          validator: (value) => value == null ? 'Pilih lokasi' : null,
+                        ),
+                    SizedBox(height: 24),
+                        Text('Dokumen', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700)),
+                        SizedBox(height: 12),
+                        ..._uploadedDocs.keys.map((doc) => Padding(padding: EdgeInsets.only(bottom: 8), child: GestureDetector(onTap: () => setState(() => _uploadedDocs[doc] = !_uploadedDocs[doc]!), child: Container(padding: EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[300]!)), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(doc), Icon(_uploadedDocs[doc]! ? Icons.check : Icons.upload)]))))).toList(),
+                        SizedBox(height: 24),
+                        SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () { if (_formKey.currentState!.validate()) { bool allDocs = _uploadedDocs.values.every((v) => v); if (!allDocs) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload semua dokumen'), backgroundColor: Colors.orange)); return; } showDialog(context: context, builder: (ctx) => AlertDialog(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), title: Text('Konfirmasi', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)), actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Batal')), ElevatedButton(onPressed: () { Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Berhasil!'), backgroundColor: Colors.green)); _resetForm(); }, child: Text('Ajukan'))])); } }, style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFDC3545), padding: EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: Text('Ajukan', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)))),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 10),
-
-            // Tab Bar
-            Container(
-              color: Colors.white,
-              child: TabBar(
-                tabs: [
-                  Tab(
-                    child: Text(
-                      'Riwayat Permohonan',
-                      style: GoogleFonts.roboto(color: Colors.black),
-                    ),
-                  ),
-                  Tab(
-                    child: Text(
-                      'Buat Permohonan',
-                      style: GoogleFonts.roboto(color: Colors.black),
-                    ),
-                  ),
-                ],
-                indicatorColor: Colors.red,
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 10),
-
-            // Tab Bar View
-            Expanded(
-              child: TabBarView(
-                children: [
-                  // Tab Riwayat Permohonan
-                  _permohonanData != null && _permohonanData!.isNotEmpty
-                      ? ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 8), // Lebih kecil
-                          itemCount: _permohonanData!.length,
-                          itemBuilder: (context, index) {
-                            final data = _permohonanData![index];
-                            final cardColor = index % 2 == 0
-                                ? Colors.grey[100]
-                                : Colors.grey[50];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DetailPermohonan(
-                                      idPermohonanSewa:
-                                          data['idPermohonanSewa']?.toString(),
-                                      kodeObjekRetribusi:
-                                          data['kodeObjekRetribusi']
-                                              ?.toString(),
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                color: cardColor,
-                                margin:
-                                    EdgeInsets.only(bottom: 8), // Lebih kecil
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(10), // Lebih kecil
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Nomor Surat di kiri, Status di kanan (sejajar)
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              'No. Permohonan - ${data['nomorSuratPermohonan'] ?? 'Loading...'}',
-                                              style: GoogleFonts.roboto(
-                                                fontSize: 13,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: (data['namaStatus']
-                                                          ?.toString()
-                                                          .toLowerCase() ==
-                                                      'baru')
-                                                  ? Colors.green
-                                                  : Colors.blue,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: Text(
-                                              data['namaStatus'] ??
-                                                  'Loading...',
-                                              style: GoogleFonts.roboto(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        'Kode Objek : ${data['kodeObjekRetribusi'] ?? '-'}',
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 13,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        'Jenis           : ${data['jenisPermohonan'] ?? '-'}',
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 13,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        'Tanggal       : ${data['tanggalDiajukan'] ?? '-'}',
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 13,
-                                          color: Colors.grey[700],
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                      : Center(child: Text('Data tidak tersedia')),
-
-                  // Tab Buat Permohonan
-                  Container(
-                    child: Center(child: FormulirPermohonanBaru()),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
